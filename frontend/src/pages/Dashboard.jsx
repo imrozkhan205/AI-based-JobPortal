@@ -1,4 +1,3 @@
-// pages/Dashboard.jsx - Enhanced dashboard with user info
 import { useUser } from '@clerk/clerk-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 
