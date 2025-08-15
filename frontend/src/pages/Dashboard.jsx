@@ -1,4 +1,4 @@
-import { useUser } from '@clerk/clerk-react';
+import { useUser, UserButton } from '@clerk/clerk-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Dashboard() {
@@ -10,6 +10,12 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Top bar with user avatar/logout */}
+      <div className="flex justify-end mb-6">
+        {/* You can set `afterSignOutUrl` to the page you want to redirect to */}
+        <UserButton afterSignOutUrl="/" />
+      </div>
+
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">

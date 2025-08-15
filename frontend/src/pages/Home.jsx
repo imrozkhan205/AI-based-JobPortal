@@ -1,13 +1,22 @@
 import { useAuth, UserButton } from "@clerk/clerk-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import rocket from "../assets/rocket.png";
 import resumeex from "../assets/resumeex.png";
-import jsonex from "../assets/jsonex.png"
-import listingex from "../assets/listingex.png"
-import arrow from "../assets/arrow.png"
+import jsonex from "../assets/jsonex.png";
+import listingex from "../assets/listingex.png";
+import arrow from "../assets/arrow.png";
 
 export default function Home() {
   const { isLoaded, isSignedIn } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if signed in
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      navigate("/dashboard");
+    }
+  }, [isLoaded, isSignedIn, navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-600 via-blue-400 to-blue-200 text-white px-4">
@@ -30,11 +39,11 @@ export default function Home() {
           Which will help you find a job according to your skill by fetching
           your resume into a job pool.
         </p>
-          <Link to="/sign-up">
-            <button className="bg-white text-black text-opacity-80 px-6 py-3 rounded-2xl text-lg font-semibold shadow-lg hover:bg-gray-100">
-              Get Started
-            </button>
-          </Link>
+        <Link to="/sign-up">
+          <button className="bg-white text-black text-opacity-80 px-6 py-3 rounded-2xl text-lg font-semibold shadow-lg hover:bg-gray-100">
+            Get Started
+          </button>
+        </Link>
       </main>
 
       <div className="grid grid-cols-5 px-20 justify-center">
@@ -42,11 +51,11 @@ export default function Home() {
 
         <img src={arrow} alt="" className="h-[50px] mt-20 ml-10" />
 
-         <img src={jsonex} alt="json-pic" className="size-[200px] mt-8 ml-9 " />
+        <img src={jsonex} alt="json-pic" className="size-[200px] mt-8 ml-9" />
 
-          <img src={arrow} alt="" className="h-[50px] px-10 mt-20" />
+        <img src={arrow} alt="" className="h-[50px] px-10 mt-20" />
 
-          <img src={listingex} alt="job-listings" className="size-[200px] mt-10 ml-10" />
+        <img src={listingex} alt="job-listings" className="size-[200px] mt-10 ml-10" />
       </div>
     </div>
   );
