@@ -29,13 +29,13 @@ export default function Home() {
       {/* Main Content */}
       <main className="text-center mb-20">
         <div className="flex justify-center items-center mt-20">
-          <img src={rocket} alt="" className="h-[120px] mb-4" />
-          <h1 className="font-michroma text-4xl md:text-6xl font-bold mb-4">
+          <img src={rocket} alt="" className="h-[80px] md:h-[120px] mb-4" />
+          <h1 className="font-michroma text-3xl md:text-6xl font-bold mb-4">
             AI based Job Portal
           </h1>
         </div>
 
-        <p className="text-[18px] flex mb-6 ml-20 px-10">
+        <p className="text-[16px] md:text-[18px] flex mb-6 mx-auto px-4 text-center max-w-2xl">
           Which will help you find a job according to your skill by fetching
           your resume into a job pool.
         </p>
@@ -46,16 +46,16 @@ export default function Home() {
         </Link>
       </main>
 
-      <div className="grid grid-cols-5 px-20 justify-center">
-        <img src={resumeex} alt="resume-pic" className="size-[300px]" />
+      <div className="grid grid-cols-1 md:grid-cols-5 px-4 md:px-20 justify-center">
+        <img src={resumeex} alt="resume-pic" className="size-[200px] md:size-[300px] mx-auto" />
 
-        <img src={arrow} alt="" className="h-[50px] mt-20 ml-10" />
+        <img src={arrow} alt="" className="h-[50px] rotate-90 md:rotate-0 mx-auto my-4 md:my-0 md:mt-20 md:ml-10" />
 
-        <img src={jsonex} alt="json-pic" className="size-[200px] mt-8 ml-9" />
+        <img src={jsonex} alt="json-pic" className="size-[150px] md:size-[200px] mx-auto mt-4 md:mt-8 md:ml-9" />
 
-        <img src={arrow} alt="" className="h-[50px] px-10 mt-20" />
+        <img src={arrow} alt="" className="h-[50px] rotate-90 md:rotate-0 mx-auto my-4 md:my-0 px-10 md:mt-20" />
 
-        <img src={listingex} alt="job-listings" className="size-[200px] mt-10 ml-10" />
+        <img src={listingex} alt="job-listings" className="size-[150px] md:size-[200px] mx-auto mt-4 md:mt-10 md:ml-10" />
       </div>
     </div>
   );

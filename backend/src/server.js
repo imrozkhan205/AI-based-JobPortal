@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import jobRoutes from './routes/job.route.js'
 import { clerkAuthMiddleware } from './middleware/authMiddleware.js';
 
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT;
