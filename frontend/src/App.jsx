@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
-import { SignedIn } from '@clerk/clerk-react';
+import { SignedIn, useUser } from '@clerk/clerk-react';
 import { Home, Users, FileText, Settings, MessageCircle, Building2, LayoutDashboard as DashboardIcon } from 'lucide-react';
 import { useState } from 'react';
 
@@ -8,9 +8,9 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import HomePage from './pages/Home';
 import Sidebar from './components/Sidebar';
+import SettingsPage from './pages/SettingsPage'
 
 export default function App() {
-
   const [collapsed, setCollapsed] = useState(false);
 
   const navigationLinks = [
@@ -41,6 +41,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
 
           <Route
             path="/dashboard"
