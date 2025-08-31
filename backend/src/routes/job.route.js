@@ -1,7 +1,8 @@
 import express from 'express';
-import { createJob } from '../controllers/job.controller.js';
+import { createJob, getJobs } from '../controllers/job.controller.js';
 const router = express.Router();
 
 router.post('/', createJob);
+router.get('/', getJobs)
 
 export default router

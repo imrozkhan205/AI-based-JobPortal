@@ -21,3 +21,11 @@ export const createJob = async(req, res) => {
         res.status(500).json({message: "Server error"});
     }
 }
+
+export const getJobs = async(req, res) => {
+    try {
+        const {title, description, company, location, salary_range, posted_by} = req.body;
+    } catch (error) {
+        
+    }
+}
