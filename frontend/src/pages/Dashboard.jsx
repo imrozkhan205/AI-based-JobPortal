@@ -1,57 +1,40 @@
-import { useAuth } from "@clerk/clerk-react";
-import { useEffect, useState } from "react";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { useEffect } from "react";
 import axios from "axios";
 
 export default function Dashboard() {
   const { getToken } = useAuth();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user } = useUser();
 
   useEffect(() => {
-    async function fetchProtectedData() {
+    async function syncUser() {
       try {
-        setLoading(true);
-        const token = await getToken();
-        
-        console.log('Token retrieved:', token ? 'Token exists' : 'No token');
-        console.log('Full token:', token);
-        
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
+        if (!user) return;
 
-        const res = await axios.get("http://localhost:5000/api/protected", {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const token = await getToken();
+
+        await axios.post(
+          "http://localhost:5000/api/auth/sync-user",
+          {
+            clerkId: user.id,
+            email: user.primaryEmailAddress.emailAddress,
           },
-        });
-        
-        console.log('Success:', res.data);
-        setData(res.data);
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
       } catch (err) {
-        console.error('Error fetching protected data:', err);
-        console.error('Error details:', {
-          status: err.response?.status,
-          statusText: err.response?.statusText,
-          data: err.response?.data
-        });
-        setError(err.response?.data?.error || err.message);
-      } finally {
-        setLoading(false);
+        console.error("Error syncing user:", err);
       }
     }
 
-    fetchProtectedData();
-  }, [getToken]);
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+    syncUser();
+  }, [user, getToken]);
 
   return (
     <div>
       <h1>Dashboard</h1>
-      {data && <p>{data.message}</p>}
+      <p>Welcome, {user?.fullName || user?.username || user?.id}</p>
     </div>
   );
 }
