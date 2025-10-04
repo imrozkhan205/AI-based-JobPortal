@@ -24,4 +24,7 @@ router.put("/:id", clerkAuthMiddleware, ensureUserInDB, updateJob);
 // DELETE /api/jobs/:id - Delete a job (only by creator)
 router.delete("/:id", clerkAuthMiddleware, ensureUserInDB, deleteJob);
 
+//Editing Job
+// router.put("edit-job/:id", editJob)
+
 export default router;
