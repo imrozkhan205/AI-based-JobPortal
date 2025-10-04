@@ -359,3 +359,48 @@ export const getJobsByEmployer = async (req, res) => {
         });
     }
 };
+
+// export const editJob = async(req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const clerkId = req.user.sub;
+
+//         // Get user's database ID
+//         const [userRows] = await pool.query(
+//             "SELECT id FROM users WHERE clerk_id = ?", 
+//             [clerkId]
+//         );
+
+//         if (userRows.length === 0) {
+//             return res.status(404).json({ message: "User not found" });
+//         }
+
+//         const userId = userRows[0].id;
+
+//         // Fetch job with ownership verification
+//         const [jobs] = await pool.query(
+//             `SELECT 
+//                 j.*,
+//                 u.email as posted_by_email,
+//                 DATE_FORMAT(j.created_at, '%Y-%m-%d %H:%i:%s') as formatted_date
+//             FROM jobs j
+//             LEFT JOIN users u ON j.posted_by = u.id
+//             WHERE j.id = ? AND j.posted_by = ?`,
+//             [id, userId]
+//         );
+
+//         if (jobs.length === 0) {
+//             return res.status(404).json({ 
+//                 message: "Job not found or you don't have permission to edit it" 
+//             });
+//         }
+
+//         res.json(jobs[0]);
+//     } catch (error) {
+//         console.error("❌ Error fetching job for editing:", error);
+//         res.status(500).json({ 
+//             message: "Server error", 
+//             error: error.message 
+//         });
+//     }
+// }

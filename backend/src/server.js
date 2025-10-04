@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import jobRoutes from './routes/job.route.js'
 import userRoutes from './routes/user.route.js'
 import authRoutes from './routes/auth.route.js'
+import resumeRoutes from './routes/resume.route.js'
 import { clerkAuthMiddleware } from './middleware/authMiddleware.js';
 
 
@@ -40,6 +41,7 @@ app.get('/api/protected', (req, res, next) => {
 app.use('/api/jobs', jobRoutes)
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes)
+app.use('/api/resume', resumeRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT: ${PORT}`);

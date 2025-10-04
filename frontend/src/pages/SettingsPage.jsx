@@ -36,6 +36,8 @@ export default function SettingsPage() {
       );
 
       setRole(newRole);
+      // Reload the window after successful role switch
+      window.location.reload();
     } catch (err) {
       console.error("Error switching role:", err);
     } finally {
@@ -54,6 +56,7 @@ export default function SettingsPage() {
         </div>
         <button
           onClick={handleSwitchRole}
+
           disabled={loading}
           className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-500 disabled:opacity-50"
         >
