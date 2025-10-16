@@ -7,7 +7,7 @@ export const createJob = async (req, res) => {
         console.log("🔍 DEBUG createJob - req.body:", req.body);
         
         const clerkId = req.user.sub; // Get from your custom middleware
-        const { title, description, company, location, salary_range, job_type, requirements, benefits } = req.body;
+        const { title, description, company, location, salary_range, currency, job_type, requirements, benefits } = req.body;
 
         // Validate required fields
         if (!title || !description || !company || !location || !job_type) {
@@ -30,9 +30,9 @@ export const createJob = async (req, res) => {
 
         // Insert job into database
         const [result] = await pool.query(
-            `INSERT INTO jobs (title, description, company, location, salary_range, job_type, requirements, benefits, posted_by) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [title, description, company, location, salary_range || null, job_type, requirements || null, benefits || null, posted_by]
+            `INSERT INTO jobs (title, description, company, location, salary_range, currency, job_type, requirements, benefits, posted_by) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [title, description, company, location, salary_range || null, currency || null, job_type, requirements || null, benefits || null, posted_by]
         );
 
         console.log("✅ Job created successfully:", result.insertId);
@@ -50,6 +50,7 @@ export const createJob = async (req, res) => {
                 job_type,
                 requirements,
                 benefits,
+                currency: currency || null,
                 posted_by
             }
         });
@@ -208,7 +209,7 @@ export const updateJob = async (req, res) => {
     try {
         const { id } = req.params;
         const clerkId = req.user.sub;
-        const { title, description, company, location, salary_range, job_type, requirements, benefits } = req.body;
+        const { title, description, company, location, salary_range, currency, job_type, requirements, benefits } = req.body;
 
         // Get user's database ID
         const [userRows] = await pool.query(
@@ -240,12 +241,13 @@ export const updateJob = async (req, res) => {
                 company = ?, 
                 location = ?, 
                 salary_range = ?, 
+                currency = ?,
                 job_type = ?,
                 requirements = ?,
                 benefits = ?,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND posted_by = ?`,
-            [title, description, company, location, salary_range || null, job_type, requirements || null, benefits || null, id, userId]
+            [title, description, company, location, salary_range || null, currency || null, job_type, requirements || null, benefits || null, id, userId]
         );
 
         if (result.affectedRows === 0) {
