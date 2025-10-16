@@ -4,7 +4,7 @@ import { useAuth, useUser } from '@clerk/clerk-react';
 import axios from 'axios';
 import { 
   MapPin, 
-  DollarSign, 
+  // DollarSign, 
   Briefcase, 
   Building, 
   Calendar,
@@ -26,6 +26,12 @@ const JobDetailPage = () => {
   const [userRole, setUserRole] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const currencies = {
+    USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥', CNY: '¥',
+    AUD: 'A$', CAD: 'C$', SGD: 'S$', AED: 'د.إ'
+  };
+  const getCurrencySymbol = (code) => currencies[code] || '';
 
   const jobTypes = [
     { value: 'full-time', label: 'Full Time' },
@@ -198,8 +204,7 @@ const JobDetailPage = () => {
             </div>
             {job.salary_range && (
               <div className="flex items-center text-green-400 font-medium mb-4">
-                <DollarSign size={16} className="mr-1" />
-                {job.salary_range}
+                {`${getCurrencySymbol(job.currency)}${job.salary_range}`}
               </div>
             )}
           </div>
@@ -283,8 +288,7 @@ const JobDetailPage = () => {
               </div>
               {job.salary_range && (
                 <div className="flex items-center text-green-400">
-                  <DollarSign size={16} className="mr-3 text-gray-400" />
-                  <span>{job.salary_range}</span>
+                  <span>{`${getCurrencySymbol(job.currency)}${job.salary_range}`}</span>
                 </div>
               )}
               <div className="flex items-center text-gray-300">

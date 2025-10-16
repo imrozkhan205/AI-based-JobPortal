@@ -143,7 +143,8 @@ export default function App() {
                 {userRole === 'jobseeker' ? (
                   <BrowseJobsPage />
                 ) : (
-                  <div className="p-6 text-center">
+                  // Todo: Implement timeout
+                  <div className="p-6 text-center"> 
                     <h1 className="text-2xl font-bold text-red-400">Access Denied</h1>
                     <p className="text-gray-400 mt-2">This page is for job seekers only</p>
                   </div>

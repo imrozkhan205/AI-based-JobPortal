@@ -156,13 +156,19 @@ def match_jobs():
             job_with_score = {**job, 'matchScore': float(similarities[i]) * 100}
             matched_jobs.append(job_with_score)
         
+        # Filter jobs with match score >= 70%
+        MIN_MATCH_THRESHOLD = 40.0
+        high_match_jobs = [job for job in matched_jobs if job['matchScore'] >= MIN_MATCH_THRESHOLD]
+        
         # Sort by match score (highest first)
-        matched_jobs.sort(key=lambda x: x['matchScore'], reverse=True)
+        high_match_jobs.sort(key=lambda x: x['matchScore'], reverse=True)
         
         return jsonify({
             'success': True,
-            'matchedJobs': matched_jobs,
-            'totalMatched': len(matched_jobs)
+            'matchedJobs': high_match_jobs,
+            'totalMatched': len(high_match_jobs),
+            'totalAnalyzed': len(matched_jobs),
+            'threshold': MIN_MATCH_THRESHOLD
         }), 200
         
     except Exception as e:

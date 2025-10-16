@@ -1,381 +1,440 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
-import { Upload, Briefcase, MapPin, DollarSign, Clock, Star, Filter, Building, TrendingUp, CheckCircle } from 'lucide-react';
+import { 
+  MapPin, 
+  DollarSign, 
+  Briefcase, 
+  FileText, 
+  Building, 
+  Calendar,
+  Save,
+  Eye,
+  ArrowLeft
+} from 'lucide-react';
 
-const BrowseJobsPage = () => {
+const CreateJobPage = () => {
   const { getToken } = useAuth();
-  const [resume, setResume] = useState(null);
-  const [resumeText, setResumeText] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [allJobs, setAllJobs] = useState([]);
-  const [matchedJobs, setMatchedJobs] = useState([]);
-  const [showResults, setShowResults] = useState(false);
-  const [filters, setFilters] = useState({
+  const [loading, setLoading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    company: '',
     location: '',
-    jobType: '',
-    minMatch: 0
+    currency: 'USD',
+    salary_range: '',
+    job_type: 'full-time',
+    requirements: '',
+    benefits: '',
+    posted_by: '' // This will be set from the logged-in user
   });
+  const [errors, setErrors] = useState({});
 
-  // Fetch all jobs on component mount
-  useEffect(() => {
-    fetchJobs();
-  }, []);
+  const jobTypes = [
+    { value: 'full-time', label: 'Full Time' },
+    { value: 'part-time', label: 'Part Time' },
+    { value: 'contract', label: 'Contract' },
+    { value: 'freelance', label: 'Freelance' },
+    { value: 'internship', label: 'Internship' },
+    { value: 'remote', label: 'Remote' }
+  ];
 
-  const fetchJobs = async () => {
-    try {
-      const token = await getToken({ template: "default" });
-      const response = await axios.get('http://localhost:5000/api/jobs', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setAllJobs(response.data);
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
+  const currencies = [
+    { value: 'USD', label: 'USD - US Dollar', symbol: '$' },
+    { value: 'EUR', label: 'EUR - Euro', symbol: '€' },
+    { value: 'GBP', label: 'GBP - British Pound', symbol: '£' },
+    { value: 'INR', label: 'INR - Indian Rupee', symbol: '₹' },
+    { value: 'JPY', label: 'JPY - Japanese Yen', symbol: '¥' },
+    { value: 'CNY', label: 'CNY - Chinese Yuan', symbol: '¥' },
+    { value: 'AUD', label: 'AUD - Australian Dollar', symbol: 'A$' },
+    { value: 'CAD', label: 'CAD - Canadian Dollar', symbol: 'C$' },
+    { value: 'SGD', label: 'SGD - Singapore Dollar', symbol: 'S$' },
+    { value: 'AED', label: 'AED - UAE Dirham', symbol: 'د.إ' }
+  ];
+
+  const getCurrencySymbol = (code) => currencies.find(c => c.value === code)?.symbol || '';
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
     }
   };
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.title.trim()) newErrors.title = 'Job title is required';
+    if (!formData.description.trim()) newErrors.description = 'Job description is required';
+    if (!formData.company.trim()) newErrors.company = 'Company name is required';
+    if (!formData.location.trim()) newErrors.location = 'Location is required';
+    if (!formData.job_type) newErrors.job_type = 'Job type is required';
+    
+    // Validate salary range format if provided (numbers only; currency handled separately)
+    if (formData.salary_range && !/^\d+(?:,\d{3})*(?:\s*-\s*\d+(?:,\d{3})*)?(?:\s*(?:per\s+)?(?:hour|year|month))?$/i.test(formData.salary_range.trim())) {
+      newErrors.salary_range = 'Enter a valid range, e.g., 50,000 - 80,000 per year';
+    }
 
-    // Validate file type
-    const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (!validTypes.includes(file.type)) {
-      alert('Please upload a PDF or Word document');
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
       return;
     }
 
-    setResume(file);
-    await analyzeResume(file);
-  };
-
-  const analyzeResume = async (file) => {
-    setIsAnalyzing(true);
+    setLoading(true);
     try {
       const token = await getToken({ template: "default" });
       
-      // Create FormData to send file
-      const formData = new FormData();
-      formData.append('resume', file);
+      // Get current user info to set posted_by
+      const userRes = await axios.get("http://localhost:5000/api/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      // Call backend API to analyze resume and match jobs
+      const jobData = {
+        ...formData,
+        posted_by: userRes.data.id // Use the user's database ID
+      };
+
       const response = await axios.post(
-        'http://localhost:5000/api/resume/analyze',
-        formData,
+        'http://localhost:5000/api/jobs',
+        jobData,
         {
-          headers: {
+          headers: { 
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'application/json'
+          },
         }
       );
 
-      // Response contains resume text and matched jobs with scores
-      setResumeText(response.data.resumeText);
-      setMatchedJobs(response.data.matchedJobs);
-      setShowResults(true);
+      // Success feedback
+      alert('Job posted successfully!');
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        company: '',
+        location: '',
+        currency: 'USD',
+        salary_range: '',
+        job_type: 'full-time',
+        requirements: '',
+        benefits: '',
+        posted_by: ''
+      });
+      
+      // Optionally redirect to my-jobs page
+      // navigate('/my-jobs');
+      
     } catch (error) {
-      console.error('Error analyzing resume:', error);
-      alert(error.response?.data?.message || 'Failed to analyze resume');
+      console.error('Error creating job:', error);
+      alert(error.response?.data?.message || 'Failed to create job posting');
     } finally {
-      setIsAnalyzing(false);
+      setLoading(false);
     }
   };
 
-  const getMatchColor = (score) => {
-    if (score >= 80) return 'text-green-600 bg-green-50 border-green-200';
-    if (score >= 60) return 'text-blue-600 bg-blue-50 border-blue-200';
-    return 'text-orange-600 bg-orange-50 border-orange-200';
-  };
-
-  const getMatchLabel = (score) => {
-    if (score >= 80) return 'Excellent Match';
-    if (score >= 60) return 'Good Match';
-    return 'Potential Match';
-  };
-
-  const filteredJobs = matchedJobs.filter(job => {
-    const matchesLocation = !filters.location || 
-      job.location.toLowerCase().includes(filters.location.toLowerCase());
-    const matchesType = !filters.jobType || 
-      job.job_type === filters.jobType;
-    const matchesScore = job.matchScore >= filters.minMatch;
-    
-    return matchesLocation && matchesType && matchesScore;
-  });
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    return `${Math.floor(diffDays / 30)} months ago`;
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">AI-Powered Job Matching</h1>
-          <p className="text-gray-600 mt-2">Upload your resume and let BERT AI find your perfect match</p>
-        </div>
+  const JobPreview = () => (
+    <div className="bg-gray-800 border border-white-500/30 rounded-xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-white">Job Preview</h2>
+        <button
+          onClick={() => setShowPreview(false)}
+          className="text-gray-400 hover:text-white"
+        >
+          <ArrowLeft size={20} />
+        </button>
       </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Resume Upload Section */}
-        {!showResults && (
-          <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                <Upload className="w-8 h-8 text-blue-600" />
-              </div>
-              <h2 className="text-2xl font-semibold mb-2">Upload Your Resume</h2>
-              <p className="text-gray-600 mb-6">
-                Our BERT-powered AI will analyze your skills, experience, and qualifications to match you with the most relevant job opportunities
-              </p>
-              
-              <label className="inline-block">
-                <input
-                  type="file"
-                  className="hidden"
-                  accept=".pdf,.doc,.docx"
-                  onChange={handleFileUpload}
-                  disabled={isAnalyzing}
-                />
-                <div className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold cursor-pointer hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 inline-block shadow-lg">
-                  {isAnalyzing ? 'Analyzing Resume...' : 'Choose Resume File'}
-                </div>
-              </label>
-              
-              {resume && !isAnalyzing && (
-                <div className="mt-4 text-sm text-gray-600 flex items-center justify-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  Selected: {resume.name}
-                </div>
-              )}
-              
-              {isAnalyzing && (
-                <div className="mt-6">
-                  <div className="inline-block w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-blue-600 to-purple-600 rounded-full animate-pulse" style={{width: '70%'}}></div>
-                  </div>
-                  <div className="mt-4 space-y-2">
-                    <p className="text-sm text-gray-600 font-medium">🤖 Extracting resume content...</p>
-                    <p className="text-sm text-gray-600 font-medium">🧠 BERT analyzing your skills...</p>
-                    <p className="text-sm text-gray-600 font-medium">🎯 Matching with job postings...</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-semibold text-gray-900">BERT Technology</h3>
-                  </div>
-                  <p className="text-sm text-gray-600">Advanced NLP model understands context and semantics</p>
-                </div>
-                <div className="p-4 bg-purple-50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Star className="w-5 h-5 text-purple-600" />
-                    <h3 className="font-semibold text-gray-900">Smart Matching</h3>
-                  </div>
-                  <p className="text-sm text-gray-600">Semantic similarity scoring for accurate results</p>
-                </div>
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <h3 className="font-semibold text-gray-900">Real-time Results</h3>
-                  </div>
-                  <p className="text-sm text-gray-600">Get matched jobs instantly with confidence scores</p>
-                </div>
-              </div>
+      
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white-400">{formData.title || 'Job Title'}</h1>
+          <div className="flex items-center space-x-4 mt-2 text-gray-300">
+            <span className="flex items-center">
+              <Building size={16} className="mr-1" />
+              {formData.company || 'Company Name'}
+            </span>
+            <span className="flex items-center">
+              <MapPin size={16} className="mr-1" />
+              {formData.location || 'Location'}
+            </span>
+            <span className="flex items-center">
+              <Briefcase size={16} className="mr-1" />
+              {jobTypes.find(type => type.value === formData.job_type)?.label || 'Full Time'}
+            </span>
+          </div>
+          {formData.salary_range && (
+            <div className="flex items-center mt-2">
+              {/* <DollarSign size={16} className="mr-1 text-green-400" /> */}
+              <span className="text-green-400 font-medium">{`${getCurrencySymbol(formData.currency)}${formData.salary_range}`}</span>
             </div>
+          )}
+        </div>
+
+        <div>
+          <h3 className="font-semibold text-white mb-2">Job Description</h3>
+          <div className="text-gray-300 whitespace-pre-wrap">
+            {formData.description || 'Job description will appear here...'}
+          </div>
+        </div>
+
+        {formData.requirements && (
+          <div>
+            <h3 className="font-semibold text-white mb-2">Requirements</h3>
+            <div className="text-gray-300 whitespace-pre-wrap">{formData.requirements}</div>
           </div>
         )}
 
-        {/* Results Section */}
-        {showResults && (
-          <>
-            {/* Stats Banner */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-6 mb-6 text-white">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-blue-100 text-sm">Jobs Analyzed</p>
-                  <p className="text-3xl font-bold">{allJobs.length}</p>
-                </div>
-                <div>
-                  <p className="text-blue-100 text-sm">Matches Found</p>
-                  <p className="text-3xl font-bold">{matchedJobs.length}</p>
-                </div>
-                <div>
-                  <p className="text-blue-100 text-sm">Top Match Score</p>
-                  <p className="text-3xl font-bold">
-                    {matchedJobs.length > 0 ? `${Math.round(matchedJobs[0].matchScore)}%` : 'N/A'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Filter Bar */}
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Filter className="w-5 h-5" />
-                  Refine Results
-                </h3>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setFilters({ location: '', jobType: '', minMatch: 0 })}
-                    className="text-sm text-blue-600 hover:text-blue-700"
-                  >
-                    Clear Filters
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowResults(false);
-                      setResume(null);
-                      setMatchedJobs([]);
-                    }}
-                    className="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
-                  >
-                    <Upload className="w-4 h-4" />
-                    New Resume
-                  </button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Remote, San Francisco"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={filters.location}
-                    onChange={(e) => setFilters({...filters, location: e.target.value})}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
-                  <select
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={filters.jobType}
-                    onChange={(e) => setFilters({...filters, jobType: e.target.value})}
-                  >
-                    <option value="">All Types</option>
-                    <option value="full-time">Full Time</option>
-                    <option value="part-time">Part Time</option>
-                    <option value="contract">Contract</option>
-                    <option value="freelance">Freelance</option>
-                    <option value="internship">Internship</option>
-                    <option value="remote">Remote</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Min Match Score: {filters.minMatch}%
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={filters.minMatch}
-                    onChange={(e) => setFilters({...filters, minMatch: parseInt(e.target.value)})}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Job Listings */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold">
-                {filteredJobs.length} {filteredJobs.length === 1 ? 'Job' : 'Jobs'} Matched to Your Profile
-              </h3>
-
-              {filteredJobs.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-                  <p className="text-gray-600 text-lg">No jobs match your current filters. Try adjusting them!</p>
-                </div>
-              ) : (
-                filteredJobs.map((job) => (
-                  <div key={job.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-6 border-l-4 border-blue-500">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2 flex-wrap">
-                          <h3 className="text-xl font-bold text-gray-900">{job.title}</h3>
-                          <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${getMatchColor(job.matchScore)}`}>
-                            {Math.round(job.matchScore)}% Match
-                          </span>
-                          <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                            {getMatchLabel(job.matchScore)}
-                          </span>
-                        </div>
-                        <p className="text-lg text-gray-700 font-medium flex items-center gap-2">
-                          <Building className="w-4 h-4" />
-                          {job.company}
-                        </p>
-                      </div>
-                      <Star className="w-6 h-6 text-gray-400 hover:text-yellow-500 cursor-pointer transition-colors" />
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <MapPin className="w-4 h-4" />
-                        {job.location}
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Briefcase className="w-4 h-4" />
-                        {job.job_type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                      </div>
-                      {job.salary_range && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <DollarSign className="w-4 h-4" />
-                          {job.salary_range}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        {formatDate(job.created_at)}
-                      </div>
-                    </div>
-
-                    <p className="text-gray-600 mb-4 line-clamp-3">{job.description}</p>
-
-                    {job.requirements && (
-                      <div className="mb-4">
-                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Key Requirements:</h4>
-                        <p className="text-sm text-gray-600 line-clamp-2">{job.requirements}</p>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <div className="text-sm text-gray-500">
-                        Matched based on BERT semantic analysis
-                      </div>
-                      <button className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                        Apply Now
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </>
+        {formData.benefits && (
+          <div>
+            <h3 className="font-semibold text-white mb-2">Benefits</h3>
+            <div className="text-gray-300 whitespace-pre-wrap">{formData.benefits}</div>
+          </div>
         )}
       </div>
     </div>
   );
+
+  if (showPreview) {
+    return (
+      <div className="p-6">
+        <JobPreview />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-white mb-2">Post a New Job</h1>
+        <p className="text-gray-400">Fill in the details to create a job listing</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Job Title & Company */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Job Title *
+            </label>
+            <div className="relative">
+              <Briefcase className="absolute left-3 top-3 text-gray-400" size={20} />
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                className={`w-full pl-10 pr-4 py-3 bg-gray-800 border ${
+                  errors.title ? 'border-red-500' : 'border-gray-700'
+                } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-white-500`}
+                placeholder="e.g. Senior Frontend Developer"
+              />
+            </div>
+            {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Company Name *
+            </label>
+            <div className="relative">
+              <Building className="absolute left-3 top-3 text-gray-400" size={20} />
+              <input
+                type="text"
+                name="company"
+                value={formData.company}
+                onChange={handleInputChange}
+                className={`w-full pl-10 pr-4 py-3 bg-gray-800 border ${
+                  errors.company ? 'border-red-500' : 'border-gray-700'
+                } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-white-500`}
+                placeholder="e.g. TechCorp Inc."
+              />
+            </div>
+            {errors.company && <p className="text-red-400 text-sm mt-1">{errors.company}</p>}
+          </div>
+        </div>
+
+        {/* Location & Job Type */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Location *
+            </label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-3 text-gray-400" size={20} />
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                className={`w-full pl-10 pr-4 py-3 bg-gray-800 border ${
+                  errors.location ? 'border-red-500' : 'border-gray-700'
+                } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-white-500`}
+                placeholder="e.g. San Francisco, CA or Remote"
+              />
+            </div>
+            {errors.location && <p className="text-red-400 text-sm mt-1">{errors.location}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Job Type *
+            </label>
+            <select
+              name="job_type"
+              value={formData.job_type}
+              onChange={handleInputChange}
+              className={`w-full px-4 py-3 bg-gray-800 border ${
+                errors.job_type ? 'border-red-500' : 'border-gray-700'
+              } rounded-lg text-white focus:outline-none focus:border-white-500`}
+            >
+              {jobTypes.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+            {errors.job_type && <p className="text-red-400 text-sm mt-1">{errors.job_type}</p>}
+          </div>
+        </div>
+
+        {/* Currency & Salary Range */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Compensation (Optional)
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="relative md:col-span-1">
+              <select
+                name="currency"
+                value={formData.currency}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-3 bg-gray-800 border ${
+                  errors.currency ? 'border-red-500' : 'border-gray-700'
+                } rounded-lg text-white focus:outline-none focus:border-white-500`}
+              >
+                {currencies.map(curr => (
+                  <option key={curr.value} value={curr.value}>
+                    {curr.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="relative md:col-span-2">
+              {/* <DollarSign className="absolute left-3 top-3 text-gray-400" size={20} /> */}
+              <span className="absolute left-9 top-3 text-gray-300">
+                {getCurrencySymbol(formData.currency)}
+              </span>
+              <input
+                type="text"
+                name="salary_range"
+                value={formData.salary_range}
+                onChange={handleInputChange}
+                className={`w-full pl-16 pr-4 py-3 bg-gray-800 border ${
+                  errors.salary_range ? 'border-red-500' : 'border-gray-700'
+                } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-white-500`}
+                placeholder="e.g. 60,000 - 90,000 per year"
+              />
+            </div>
+          </div>
+          {errors.salary_range && <p className="text-red-400 text-sm mt-1">{errors.salary_range}</p>}
+        </div>
+
+        {/* Job Description */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Job Description *
+          </label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            rows={6}
+            className={`w-full px-4 py-3 bg-gray-800 border ${
+              errors.description ? 'border-red-500' : 'border-gray-700'
+            } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-white-500 resize-vertical`}
+            placeholder="Describe the role, responsibilities, and what you're looking for in a candidate..."
+          />
+          {errors.description && <p className="text-red-400 text-sm mt-1">{errors.description}</p>}
+        </div>
+
+        {/* Requirements */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Requirements (Optional)
+          </label>
+          <textarea
+            name="requirements"
+            value={formData.requirements}
+            onChange={handleInputChange}
+            rows={4}
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-white-500 resize-vertical"
+            placeholder="• Bachelor's degree in Computer Science&#10;• 3+ years of React experience&#10;• Strong problem-solving skills"
+          />
+        </div>
+
+        {/* Benefits */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Benefits (Optional)
+          </label>
+          <textarea
+            name="benefits"
+            value={formData.benefits}
+            onChange={handleInputChange}
+            rows={3}
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-white-500 resize-vertical"
+            placeholder="• Health insurance&#10;• 401(k) matching&#10;• Flexible work hours&#10;• Remote work options"
+          />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 pt-6">
+          <button
+            type="button"
+            onClick={() => setShowPreview(true)}
+            className="flex items-center justify-center px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition font-medium"
+            disabled={!formData.title || !formData.description}
+          >
+            <Eye size={20} className="mr-2" />
+            Preview Job
+          </button>
+          
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex items-center justify-center px-8 py-3 bg-white-600 hover:bg-white-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition font-medium flex-1 sm:flex-none"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Posting Job...
+              </>
+            ) : (
+              <>
+                <Save size={20} className="mr-2" />
+                Post Job
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 };
 
-export default BrowseJobsPage;
+export default CreateJobPage;
