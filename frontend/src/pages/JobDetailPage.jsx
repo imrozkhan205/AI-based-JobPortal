@@ -4,14 +4,15 @@ import { useAuth, useUser } from '@clerk/clerk-react';
 import axios from 'axios';
 import { 
   MapPin, 
-  // DollarSign, 
   Briefcase, 
   Building, 
   Calendar,
   ArrowLeft,
   Edit,
   Trash2,
-  UserCheck
+  UserCheck,
+  CheckCircle,
+  Clock
 } from 'lucide-react';
 
 const JobDetailPage = () => {
@@ -26,6 +27,10 @@ const JobDetailPage = () => {
   const [userRole, setUserRole] = useState(null);
   const [isOwner, setIsOwner] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState(null);
+  const [coverLetter, setCoverLetter] = useState('');
+  const [applying, setApplying] = useState(false);
 
   const currencies = {
     USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥', CNY: '¥',
@@ -51,7 +56,7 @@ const JobDetailPage = () => {
         const jobResponse = await axios.get(`http://localhost:5000/api/jobs/${id}`);
         setJob(jobResponse.data);
 
-        // If user is signed in, fetch their role and check if they own the job
+        // If user is signed in, fetch their role and check application status
         if (isSignedIn) {
           const token = await getToken({ template: "default" });
           const userResponse = await axios.get("http://localhost:5000/api/users/me", {
@@ -72,6 +77,21 @@ const JobDetailPage = () => {
             const isJobOwner = myJobsResponse.data.jobs.some(j => j.id === parseInt(id));
             setIsOwner(isJobOwner);
           }
+          
+          // Check if user has already applied (for jobseekers)
+          if (userResponse.data.role === 'jobseeker') {
+            try {
+              const statusResponse = await axios.get(
+                `http://localhost:5000/api/applications/check/${id}`,
+                {
+                  headers: { Authorization: `Bearer ${token}` }
+                }
+              );
+              setApplicationStatus(statusResponse.data);
+            } catch (err) {
+              console.error('Error checking application status:', err);
+            }
+          }
         }
         
         setError(null);
@@ -89,6 +109,39 @@ const JobDetailPage = () => {
 
     fetchJobAndUserRole();
   }, [id, isSignedIn, getToken]);
+
+  const handleApplyForJob = async () => {
+    if (!coverLetter.trim()) {
+      alert('Please write a cover letter before applying');
+      return;
+    }
+
+    try {
+      setApplying(true);
+      const token = await getToken({ template: "default" });
+      
+      await axios.post(
+        `http://localhost:5000/api/applications/${id}`,
+        { coverLetter },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      setShowApplyModal(false);
+      setApplicationStatus({ hasApplied: true, application: { status: 'pending' } });
+      alert('Application submitted successfully!');
+    } catch (err) {
+      console.error('Error applying for job:', err);
+      if (err.response?.status === 400) {
+        alert(err.response.data.message);
+      } else {
+        alert('Failed to submit application. Please try again.');
+      }
+    } finally {
+      setApplying(false);
+    }
+  };
 
   const handleDeleteJob = async () => {
     try {
@@ -129,6 +182,16 @@ const JobDetailPage = () => {
       'remote': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
     };
     return colors[jobType] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+  };
+
+  const getStatusBadge = (status) => {
+    const badges = {
+      pending: { color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: Clock, label: 'Pending' },
+      reviewed: { color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: Clock, label: 'Reviewed' },
+      accepted: { color: 'bg-green-500/20 text-green-400 border-green-500/30', icon: CheckCircle, label: 'Accepted' },
+      rejected: { color: 'bg-red-500/20 text-red-400 border-red-500/30', icon: Clock, label: 'Rejected' }
+    };
+    return badges[status] || badges.pending;
   };
 
   if (loading) {
@@ -231,10 +294,30 @@ const JobDetailPage = () => {
 
           {/* Apply button for jobseekers */}
           {userRole === 'jobseeker' && isSignedIn && (
-            <button className="flex items-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors font-medium">
-              <UserCheck size={16} className="mr-2" />
-              Apply Now
-            </button>
+            <div>
+              {applicationStatus?.hasApplied ? (
+                <div className="flex items-center gap-3">
+                  {(() => {
+                    const statusBadge = getStatusBadge(applicationStatus.application.status);
+                    const StatusIcon = statusBadge.icon;
+                    return (
+                      <div className={`flex items-center px-4 py-3 rounded-lg border ${statusBadge.color} font-medium`}>
+                        <StatusIcon size={16} className="mr-2" />
+                        Application {statusBadge.label}
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setShowApplyModal(true)}
+                  className="flex items-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors font-medium"
+                >
+                  <UserCheck size={16} className="mr-2" />
+                  Apply Now
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -308,6 +391,58 @@ const JobDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Apply Modal */}
+      {showApplyModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-2xl w-full">
+            <h3 className="text-2xl font-semibold text-white mb-4">Apply for {job.title}</h3>
+            
+            <div className="mb-6">
+              <p className="text-gray-300 mb-4">
+                You are applying for <span className="font-semibold text-white">{job.title}</span> at <span className="font-semibold text-white">{job.company}</span>
+              </p>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Cover Letter <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  value={coverLetter}
+                  onChange={(e) => setCoverLetter(e.target.value)}
+                  placeholder="Tell us why you're a great fit for this role..."
+                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors resize-none"
+                  rows={8}
+                  required
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                  Tip: Highlight your relevant experience and skills that match the job requirements
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowApplyModal(false);
+                  setCoverLetter('');
+                }}
+                className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                disabled={applying}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApplyForJob}
+                disabled={applying || !coverLetter.trim()}
+                className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {applying ? 'Submitting...' : 'Submit Application'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
