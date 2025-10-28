@@ -29,6 +29,7 @@ import JobDetailPage from './pages/JobDetailPage';
 // Role-specific Dashboard components
 import JobseekerDashboard from './pages/JobseekerDashboard.jsx';
 import EmployerDashboard from './pages/EmployerDashboard.jsx';
+import EmployerApplicationPage from './pages/employer/EmployerApplicationPage.jsx';
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -170,11 +171,7 @@ export default function App() {
                 {userRole === 'jobseeker' ? (
                   <ApplicationsPage />
                 ) : userRole === 'employer' ? (
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Candidate Applications</h1>
-                    <p className="text-gray-400">Review applications for your job postings</p>
-                    {/* This would be a different component for employers */}
-                  </div>
+                  <EmployerApplicationPage />
                 ) : null}
               </SignedIn>
             }
