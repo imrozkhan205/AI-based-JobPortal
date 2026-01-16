@@ -3,7 +3,8 @@ import { SignedIn, useUser, useAuth } from '@clerk/clerk-react';
 import {
   Home, Users, FileText, Settings,
   MessageCircle, Building2, LayoutDashboard as DashboardIcon,
-  Briefcase, Plus, BarChart3, UserCheck
+  Briefcase, Plus, BarChart3, UserCheck,
+  File
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -30,6 +31,7 @@ import JobDetailPage from './pages/JobDetailPage';
 import JobseekerDashboard from './pages/JobseekerDashboard.jsx';
 import EmployerDashboard from './pages/EmployerDashboard.jsx';
 import EmployerApplicationPage from './pages/employer/EmployerApplicationPage.jsx';
+import AtsChecker from './pages/AtsChecker.jsx';
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -76,6 +78,9 @@ export default function App() {
     { to: '/companies', icon: <Building2 size={20} />, label: 'Companies' },
     { to: '/messages', icon: <MessageCircle size={20} />, label: 'Messages' },
     { to: '/settings', icon: <Settings size={20} />, label: 'Settings' },
+    { to: '/ats', icon: <File size={20} />, label: 'ATS Checker' },
+
+
   ];
 
   const employerLinks = [
@@ -115,6 +120,11 @@ export default function App() {
           <Route
             path="/settings"
             element={<SettingsPage onRoleChange={handleRoleChange} />}
+          />
+
+          <Route
+            path="/ats"
+            element={<AtsChecker  />}
           />
 
           {/* Role-based Dashboard */}
@@ -261,6 +271,21 @@ export default function App() {
                       ? 'Communicate with job candidates'
                       : 'Communicate with employers'
                     }
+                  </p>
+                </div>
+              </SignedIn>
+            }
+          />
+
+          {/* ATS checker */}
+          <Route
+            path="/ats"
+            element={
+              <SignedIn>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">ATS Checker</h1>
+                  <p className="text-gray-400">
+                    Check your ATS score
                   </p>
                 </div>
               </SignedIn>
