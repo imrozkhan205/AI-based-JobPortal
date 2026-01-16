@@ -165,7 +165,7 @@ const MyJobsPage = () => {
           </div>
           <button
             onClick={() => window.location.href = '/create-job'}
-            className="flex items-center px-4 py-2 bg-white-500 hover:bg-white-600 text-white rounded-lg transition-colors"
+            className="flex items-center px-4 py-2 bg-white/90 hover:bg-white text-black rounded-lg transition-colors"
           >
             <Plus size={20} className="mr-2" />
             Post New Job
