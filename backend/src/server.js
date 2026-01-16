@@ -7,7 +7,7 @@ import authRoutes from './routes/auth.route.js'
 import resumeRoutes from './routes/resume.route.js'
 import applicationRoutes from './routes/application.route.js'
 import { clerkAuthMiddleware } from './middleware/authMiddleware.js';
-
+import atsCheckerRoutes from './routes/atsChecker.js';
 
 dotenv.config();
 const app = express();
@@ -43,6 +43,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes)
 app.use('/api/resume', resumeRoutes)
 app.use('/api/applications', applicationRoutes);
+app.use('/api/ats', atsCheckerRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT: ${PORT}`);

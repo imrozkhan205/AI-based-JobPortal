@@ -1,0 +1,81 @@
+class RecommendationEngine {
+    generateRecommendations(analysisData, scoreBreakdown) {
+      const recommendations = [];
+  
+      if (scoreBreakdown.contact.status !== 'good') {
+        if (analysisData.contactInfo.emails.length === 0) {
+          recommendations.push({
+            type: 'critical',
+            category: 'contact',
+            message: 'Add a professional email address',
+            priority: 1
+          });
+        }
+        if (analysisData.contactInfo.phones.length === 0) {
+          recommendations.push({
+            type: 'warning',
+            category: 'contact',
+            message: 'Include a phone number for better reachability',
+            priority: 2
+          });
+        }
+        if (analysisData.contactInfo.linkedin.length === 0) {
+          recommendations.push({
+            type: 'info',
+            category: 'contact',
+            message: 'Consider adding your LinkedIn profile URL',
+            priority: 3
+          });
+        }
+      }
+  
+      const sections = analysisData.sections;
+      if (!sections.experience) {
+        recommendations.push({
+          type: 'critical',
+          category: 'sections',
+          message: 'Add a Work Experience section with your professional history',
+          priority: 1
+        });
+      }
+      if (!sections.education) {
+        recommendations.push({
+          type: 'warning',
+          category: 'sections',
+          message: 'Include an Education section with your qualifications',
+          priority: 2
+        });
+      }
+      if (!sections.skills) {
+        recommendations.push({
+          type: 'warning',
+          category: 'sections',
+          message: 'Add a Skills section highlighting your technical and soft skills',
+          priority: 2
+        });
+      }
+  
+      if (analysisData.keywords.length < 10) {
+        recommendations.push({
+          type: 'warning',
+          category: 'keywords',
+          message: `Only ${analysisData.keywords.length} relevant keywords found. Add more industry-specific skills and technologies`,
+          priority: 2
+        });
+      }
+  
+      if (analysisData.jobComparison && analysisData.jobComparison.missingKeywords.length > 0) {
+        const topMissing = analysisData.jobComparison.missingKeywords.slice(0, 5);
+        recommendations.push({
+          type: 'warning',
+          category: 'job_match',
+          message: `Add these keywords from the job description: ${topMissing.join(', ')}`,
+          priority: 1
+        });
+      }
+  
+      return recommendations.sort((a, b) => a.priority - b.priority);
+    }
+  }
+  
+  export default new RecommendationEngine();
