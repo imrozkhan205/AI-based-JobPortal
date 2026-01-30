@@ -8,10 +8,12 @@ import resumeRoutes from './routes/resume.route.js'
 import applicationRoutes from './routes/application.route.js'
 import { clerkAuthMiddleware } from './middleware/authMiddleware.js';
 import atsCheckerRoutes from './routes/atsChecker.js';
+import companyRoutes from './routes/company.route.js';
+
 
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 
 app.use(cors({
@@ -44,6 +46,8 @@ app.use('/api/auth', authRoutes)
 app.use('/api/resume', resumeRoutes)
 app.use('/api/applications', applicationRoutes);
 app.use('/api/ats', atsCheckerRoutes);
+app.use('/api/companies', companyRoutes);
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT: ${PORT}`);
