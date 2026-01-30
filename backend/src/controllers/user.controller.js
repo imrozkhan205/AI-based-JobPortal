@@ -27,14 +27,36 @@ export const updateRole = async (req, res) => {
     console.log("🔍 DEBUG updateRole - req.user:", req.user);
     console.log("🔍 DEBUG updateRole - req.body:", req.body);
     
+    if (!req.user || !req.user.sub) {
+      console.error("❌ No user found in request");
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     const clerkId = req.user.sub; // Use req.user.sub from your custom middleware
     const { role } = req.body;
+
+    if (!role) {
+      return res.status(400).json({ message: "Role is required" });
+    }
 
     console.log("🔍 DEBUG - Updating role for user:", clerkId, "to role:", role);
 
     if (!["jobseeker", "employer"].includes(role)) {
-      return res.status(400).json({ message: "Invalid role" });
+      return res.status(400).json({ message: "Invalid role. Must be 'jobseeker' or 'employer'" });
     }
+
+    // First check if user exists
+    const [userCheck] = await pool.query(
+      "SELECT id, role FROM users WHERE clerk_id = ?",
+      [clerkId]
+    );
+
+    if (userCheck.length === 0) {
+      console.error("❌ User not found in database:", clerkId);
+      return res.status(404).json({ message: "User not found in database. Please try logging out and back in." });
+    }
+
+    console.log("🔍 DEBUG - Current user role:", userCheck[0].role);
 
     const [result] = await pool.query(
       "UPDATE users SET role = ? WHERE clerk_id = ?",
@@ -45,16 +67,19 @@ export const updateRole = async (req, res) => {
 
     // Check if any rows were affected
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "User not found in database" });
+      console.error("❌ No rows affected by update");
+      return res.status(500).json({ message: "Failed to update role. No rows affected." });
     }
 
-    console.log("✅ Role updated successfully");
+    console.log("✅ Role updated successfully from", userCheck[0].role, "to", role);
     res.json({ message: "Role updated successfully", role });
   } catch (error) {
     console.error("❌ Error updating role:", error);
+    console.error("❌ Error stack:", error.stack);
     res.status(500).json({ 
-      message: "Server error", 
-      error: error.message 
+      message: "Server error while updating role", 
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };

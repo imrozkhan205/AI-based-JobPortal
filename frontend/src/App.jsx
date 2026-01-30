@@ -1,3 +1,4 @@
+import CompaniesPage from './pages/jobseeker/CompaniesPage.jsx';
 import { Routes, Route } from 'react-router-dom';
 import { SignedIn, useUser, useAuth } from '@clerk/clerk-react';
 import {
@@ -186,25 +187,22 @@ export default function App() {
               </SignedIn>
             }
           />
-
           <Route
             path="/companies"
             element={
               <SignedIn>
                 {userRole === 'jobseeker' ? (
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Companies</h1>
-                    <p className="text-gray-400">Explore companies and their culture</p>
-                  </div>
-                ) : (
-                  <div className="p-6 text-center">
-                    <h1 className="text-2xl font-bold text-red-400">Access Denied</h1>
-                    <p className="text-gray-400 mt-2">This page is for job seekers only</p>
-                  </div>
-                )}
-              </SignedIn>
-            }
-          />
+                  <CompaniesPage />
+               ) : (
+                 <div className="p-6 text-center">
+                   <h1 className="text-2xl font-bold text-red-400">Access Denied</h1>
+                   <p className="text-gray-400 mt-2">This page is for job seekers only</p>
+        </div>
+      )}
+    </SignedIn>
+  }
+/>
+
 
           {/* Employer routes */}
           <Route
