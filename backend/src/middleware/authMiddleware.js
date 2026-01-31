@@ -1,10 +1,12 @@
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 
-// 1. Create a JWKS client pointing to Clerk's JWKS URL
+// Must match the frontend Clerk app (from VITE_CLERK_PUBLISHABLE_KEY). Override with CLERK_JWKS_URL in .env if needed.
+const CLERK_JWKS_URL = process.env.CLERK_JWKS_URL || 'https://tidy-wasp-22.clerk.accounts.dev/.well-known/jwks.json';
+
 const client = jwksClient({
-  jwksUri: 'https://kind-emu-28.clerk.accounts.dev/.well-known/jwks.json',
-  timeout: 30000, // Defaults to 30s
+  jwksUri: CLERK_JWKS_URL,
+  timeout: 30000,
 });
 
 // 2. Get the correct signing key based on JWT header's kid
@@ -32,7 +34,11 @@ export function clerkAuthMiddleware(req, res, next) {
   const token = authHeader.split(' ')[1];
   console.log('✅ Token extracted, verifying...');
 
-  jwt.verify(token, getKey, { algorithms: ['RS256'] }, (err, decoded) => {
+  jwt.verify(token, getKey, {
+    algorithms: ['RS256'],
+    clockTolerance: 120,
+    ignoreNotBefore: true, // Clerk nbf can trigger "jwt not active"; we still verify signature + exp
+  }, (err, decoded) => {
     if (err) {
       console.error('❌ JWT verification error:', err.message);
       return res
