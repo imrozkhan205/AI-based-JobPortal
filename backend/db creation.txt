@@ -1,31 +1,42 @@
-create database job_portal;
-use job_portal;
-CREATE TABLE jobs (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
-    company VARCHAR(255) NOT NULL,
-    location VARCHAR(255) NOT NULL,
-    salary_range VARCHAR(50),
-    job_type ENUM('Full-Time', 'Part-Time', 'Contract', 'Internship') NOT NULL,
-    posted_by INT NOT NULL, -- user_id of recruiter
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-select * from jobs;
+CREATE TABLE `applications` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `job_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `cover_letter` text,
+  `resume_url` varchar(500) DEFAULT NULL,
+  `status` enum('pending','reviewed','accepted','rejected') DEFAULT 'pending',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_application` (`job_id`,`user_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `applications_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `applications_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
-CREATE TABLE users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  clerk_id VARCHAR(255) NOT NULL UNIQUE,
-  email VARCHAR(255) NOT NULL,
-  role ENUM('jobseeker', 'employer') DEFAULT 'jobseeker'
-);
+CREATE TABLE `jobs` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `company` varchar(255) NOT NULL,
+  `location` varchar(255) NOT NULL,
+  `salary_range` varchar(50) DEFAULT NULL,
+  `currency` varchar(8) DEFAULT NULL,
+  `job_type` enum('Full-Time','Part-Time','Contract','Internship') NOT NULL,
+  `posted_by` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `requirements` text,
+  `benefits` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
-ALTER TABLE jobs ADD COLUMN currency VARCHAR(8) NULL AFTER salary_range;
-UPDATE jobs SET currency = 'USD' WHERE currency IS NULL;
-select * from users;
-show tables;
-describe jobs;
-ALTER TABLE jobs 
-ADD COLUMN requirements TEXT,
-ADD COLUMN benefits TEXT;
+
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `clerk_id` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `role` enum('jobseeker','employer') DEFAULT 'jobseeker',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `clerk_id` (`clerk_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
