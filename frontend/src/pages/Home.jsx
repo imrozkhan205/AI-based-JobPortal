@@ -31,14 +31,14 @@ export default function Home() {
         <div className="flex justify-center items-center mt-20">
           <img src={rocket} alt="" className="h-[80px] md:h-[120px] mb-4" />
           <h1 className="font-michroma text-3xl md:text-6xl font-bold mb-4">
-            AI based Job Portal
+            JobSpace
           </h1>
         </div>
 
-        <p className="text-[16px] md:text-[18px] flex mb-6 mx-auto px-4 text-center max-w-2xl">
-          Which will help you find a job according to your skill by fetching
-          your resume into a job pool.
-        </p>
+        <p className="text-[16px] md:text-[18px] mb-6 mx-auto px-4 text-center max-w-2xl">
+         Talent and teams, connected by AI
+        </p> 
+
         <Link to="/sign-up">
           <button className="bg-white text-black text-opacity-80 px-6 py-3 rounded-2xl text-lg font-semibold shadow-lg hover:bg-gray-100">
             Get Started

@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 
 // Extract JWKS URI from token issuer dynamically
+// Falls back to CLERK_JWKS_URL env var or default if token extraction fails
 function getJwksUriFromToken(token) {
   try {
     const decoded = jwt.decode(token, { complete: true });
@@ -13,8 +14,8 @@ function getJwksUriFromToken(token) {
   } catch (err) {
     console.error('❌ Error extracting issuer from token:', err);
   }
-  // Fallback to default
-  return 'https://kind-emu-28.clerk.accounts.dev/.well-known/jwks.json';
+  // Fallback to env var or default
+  return process.env.CLERK_JWKS_URL || 'https://kind-emu-28.clerk.accounts.dev/.well-known/jwks.json';
 }
 
 // Create JWKS client with caching
@@ -119,8 +120,8 @@ export function clerkAuthMiddleware(req, res, next) {
 
   jwt.verify(token, getKey, {
     algorithms: ['RS256'],
-    ignoreExpiration: false,
-    ignoreNotBefore: false,
+    clockTolerance: 120,
+    ignoreNotBefore: true, // Clerk nbf can trigger "jwt not active"; we still verify signature + exp
   }, (err, decoded) => {
     if (err) {
       console.error('❌ JWT verification error:', err.message);

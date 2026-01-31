@@ -6,6 +6,7 @@ import userRoutes from './routes/user.route.js'
 import authRoutes from './routes/auth.route.js'
 import resumeRoutes from './routes/resume.route.js'
 import applicationRoutes from './routes/application.route.js'
+import messageRoutes from './routes/message.route.js'
 import { clerkAuthMiddleware } from './middleware/authMiddleware.js';
 import atsCheckerRoutes from './routes/atsChecker.js';
 import companyRoutes from './routes/company.route.js';
@@ -17,7 +18,7 @@ const PORT = process.env.PORT || 5000;
 
 
 app.use(cors({
-  origin: 'http://localhost:5173', // Your frontend URL
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -47,7 +48,7 @@ app.use('/api/resume', resumeRoutes)
 app.use('/api/applications', applicationRoutes);
 app.use('/api/ats', atsCheckerRoutes);
 app.use('/api/companies', companyRoutes);
-
+app.use('/api/messages', messageRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT: ${PORT}`);
