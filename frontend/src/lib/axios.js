@@ -5,11 +5,11 @@ export const useAxios = () => {
   const { getToken } = useAuth();
 
   const axiosInstance = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: '/api', // Proxied to backend by Vite (see vite.config.js)
   });
 
   axiosInstance.interceptors.request.use(async (config) => {
-    const token = await getToken();
+    const token = await getToken({ template: "default" });
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
