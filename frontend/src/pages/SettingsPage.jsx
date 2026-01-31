@@ -1,23 +1,21 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
+import { useAxios } from "../lib/axios";
 
 export default function SettingsPage({ onRoleChange }) {
-  const { getToken } = useAuth(); // ✅ correct way
+  const { getToken } = useAuth();
+  const api = useAxios();
   const [role, setRole] = useState("jobseeker");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const [success, setSuccess] = useState("");
 
   // Fetch current role from backend
   useEffect(() => {
     const fetchRole = async () => {
       try {
-        setError("");
-        const token = await getToken({ template: "default" }); // get Clerk JWT
-        const res = await axios.get("http://localhost:5000/api/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        setError(null);
+        const res = await api.get("/users/me");
         setRole(res.data.role);
       } catch (err) {
         console.error("Error fetching role:", err);
@@ -26,21 +24,21 @@ export default function SettingsPage({ onRoleChange }) {
       }
     };
     fetchRole();
-  }, [getToken]);
+  }, []);
 
   const handleSwitchRole = async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     setSuccess("");
     try {
       const token = await getToken({ template: "default" });
+      if (!token) {
+        setError("Not signed in. Please sign in again.");
+        return;
+      }
       const newRole = role === "jobseeker" ? "employer" : "jobseeker";
 
-      await axios.put(
-        "http://localhost:5000/api/users/role",
-        { role: newRole },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put("/users/role", { role: newRole });
 
       setRole(newRole);
       setSuccess(`Role successfully changed to ${newRole}!`);
@@ -50,10 +48,12 @@ export default function SettingsPage({ onRoleChange }) {
         onRoleChange(newRole);
       }
     } catch (err) {
-      console.error("Error switching role:", err);
-      console.error("Full error:", err.response?.data);
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Failed to switch role. Please try again.";
-      setError(errorMessage);
+      const isNetworkError = !err.response && (err.message === "Network Error" || err.code === "ERR_NETWORK");
+      const msg = isNetworkError
+        ? "Can't reach the backend. (1) Start the backend: in the backend folder run 'npm run dev'. (2) Restart the frontend (stop and run 'npm run dev' again in the frontend folder) so the proxy is active."
+        : (err.response?.data?.message || err.response?.data?.error || err.message || "Failed to switch role. Please try again.");
+      setError(msg);
+      console.error("Error switching role:", err.response?.data || err);
     } finally {
       setLoading(false);
     }
@@ -62,6 +62,12 @@ export default function SettingsPage({ onRoleChange }) {
   return (
     <div className="p-6 text-white">
       <h1 className="text-2xl font-bold mb-4">Settings</h1>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded text-red-200 text-sm">
+          {error}
+        </div>
+      )}
 
       <div className="flex items-center justify-between bg-gray-800 p-4 rounded-lg">
         <div>
@@ -76,12 +82,6 @@ export default function SettingsPage({ onRoleChange }) {
           {loading ? "Switching..." : "Switch Role"}
         </button>
       </div>
-
-      {error && (
-        <div className="mt-4 p-4 bg-red-900/50 border border-red-500 rounded-lg">
-          <p className="text-red-200">{error}</p>
-        </div>
-      )}
 
       {success && (
         <div className="mt-4 p-4 bg-green-900/50 border border-green-500 rounded-lg">

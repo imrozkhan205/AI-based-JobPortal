@@ -33,6 +33,7 @@ import JobseekerDashboard from './pages/JobseekerDashboard.jsx';
 import EmployerDashboard from './pages/EmployerDashboard.jsx';
 import EmployerApplicationPage from './pages/employer/EmployerApplicationPage.jsx';
 import AtsChecker from './pages/AtsChecker.jsx';
+import MessagesPage from './pages/MessagesPage.jsx';
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -80,8 +81,6 @@ export default function App() {
     { to: '/messages', icon: <MessageCircle size={20} />, label: 'Messages' },
     { to: '/settings', icon: <Settings size={20} />, label: 'Settings' },
     { to: '/ats', icon: <File size={20} />, label: 'ATS Checker' },
-
-
   ];
 
   const employerLinks = [
@@ -121,11 +120,6 @@ export default function App() {
           <Route
             path="/settings"
             element={<SettingsPage onRoleChange={handleRoleChange} />}
-          />
-
-          <Route
-            path="/ats"
-            element={<AtsChecker  />}
           />
 
           {/* Role-based Dashboard */}
@@ -193,16 +187,15 @@ export default function App() {
               <SignedIn>
                 {userRole === 'jobseeker' ? (
                   <CompaniesPage />
-               ) : (
-                 <div className="p-6 text-center">
-                   <h1 className="text-2xl font-bold text-red-400">Access Denied</h1>
-                   <p className="text-gray-400 mt-2">This page is for job seekers only</p>
-        </div>
-      )}
-    </SignedIn>
-  }
-/>
-
+                ) : (
+                  <div className="p-6 text-center">
+                    <h1 className="text-2xl font-bold text-red-400">Access Denied</h1>
+                    <p className="text-gray-400 mt-2">This page is for job seekers only</p>
+                  </div>
+                )}
+              </SignedIn>
+            }
+          />
 
           {/* Employer routes */}
           <Route
@@ -263,13 +256,7 @@ export default function App() {
             element={
               <SignedIn>
                 <div className="p-6">
-                  <h1 className="text-2xl font-bold">Messages</h1>
-                  <p className="text-gray-400">
-                    {userRole === 'employer'
-                      ? 'Communicate with job candidates'
-                      : 'Communicate with employers'
-                    }
-                  </p>
+                  <MessagesPage />
                 </div>
               </SignedIn>
             }
@@ -280,12 +267,7 @@ export default function App() {
             path="/ats"
             element={
               <SignedIn>
-                <div className="p-6">
-                  <h1 className="text-2xl font-bold">ATS Checker</h1>
-                  <p className="text-gray-400">
-                    Check your ATS score
-                  </p>
-                </div>
+                <AtsChecker />
               </SignedIn>
             }
           />
