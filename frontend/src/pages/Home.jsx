@@ -28,7 +28,7 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="text-center mb-20">
-        <div className="flex justify-center items-center mt-20">
+        <div className="flex justify-center items-center mt-20 pr-20">
           <img src={rocket} alt="" className="h-[80px] md:h-[120px] mb-4" />
           <h1 className="font-michroma text-3xl md:text-6xl font-bold mb-4">
             JobSpace
@@ -36,7 +36,8 @@ export default function Home() {
         </div>
 
         <p className="text-[16px] md:text-[18px] mb-6 mx-auto px-4 text-center max-w-2xl">
-         Talent and teams, connected by AI
+         JobSpace is an AI-powered hiring platform that understands resumes, not just keywords.
+From ATS checks and resume insights to intelligent job matching, we help candidates stand out and teams find the right talent with confidence.
         </p> 
 
         <Link to="/sign-up">
