@@ -1,4 +1,5 @@
 Lib/
 Scripts/
 share/
-venb/
+venv/
+venv/pyvenv.cfg
