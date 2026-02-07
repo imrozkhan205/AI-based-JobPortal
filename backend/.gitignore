@@ -1,2 +1,7 @@
 /node_modules
+<<<<<<< HEAD
 .env
+=======
+.env/
+uploads/
+>>>>>>> 24e91c4 (Users can now send docs to each other)
