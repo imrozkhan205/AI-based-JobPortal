@@ -442,6 +442,30 @@ const EmployerApplicationsPage = () => {
                               </div>
                             )}
 
+                            {/* Resume Attachment */}
+                            {application.resume_url && (
+                              <div className="mb-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <FileText size={16} className="text-orange-400" />
+                                  <span className="text-sm font-medium text-gray-300">Resume Attachment</span>
+                                </div>
+                                <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                                  <a
+                                    href={application.resume_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm font-medium"
+                                  >
+                                    <FileText size={16} />
+                                    View Resume in Cloudinary
+                                  </a>
+                                  <p className="text-xs text-gray-400 mt-2">
+                                    Opens the resume in a new tab for viewing
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
                             {/* Action Buttons */}
                             <div className="flex items-center gap-2 pt-4 border-t border-gray-700">
                               <button

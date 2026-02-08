@@ -13,7 +13,7 @@ const Sidebar = ({ collapsed, setCollapsed, links }) => {
         {/* Header and toggle */}
         <div className="flex justify-between items-center mb-6">
           {!collapsed && (
-            <h2 className="text-2xl font-bold text-white">Portal</h2>
+            <h2 className="text-2xl pl-4 font-bold text-white">JobSpace</h2>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
