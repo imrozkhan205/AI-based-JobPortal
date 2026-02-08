@@ -10,6 +10,8 @@ import messageRoutes from './routes/message.route.js'
 import { clerkAuthMiddleware } from './middleware/authMiddleware.js';
 import atsCheckerRoutes from './routes/atsChecker.js';
 import companyRoutes from './routes/company.route.js';
+import reviewRoutes from "./routes/review.routes.js";
+
 
 
 dotenv.config();
@@ -49,6 +51,8 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/ats', atsCheckerRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/messages', messageRoutes);
+app.use("/api/reviews", reviewRoutes);
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT: ${PORT}`);
