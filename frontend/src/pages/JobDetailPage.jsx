@@ -31,6 +31,14 @@ const JobDetailPage = () => {
   const [applicationStatus, setApplicationStatus] = useState(null);
   const [coverLetter, setCoverLetter] = useState('');
   const [applying, setApplying] = useState(false);
+  const [modalStep, setModalStep] = useState(1); // 1 for personal info, 2 for resume/cover letter
+  const [personalInfo, setPersonalInfo] = useState({
+    address: '',
+    phone: '',
+    email: ''
+  });
+  const [resumeFile, setResumeFile] = useState(null);
+  const [resumeFileName, setResumeFileName] = useState('');
 
   const currencies = {
     USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥', CNY: '¥',
@@ -110,33 +118,138 @@ const JobDetailPage = () => {
     fetchJobAndUserRole();
   }, [id, isSignedIn, getToken]);
 
+  const handleNextStep = () => {
+    // Validate step 1 fields
+    if (!personalInfo.address.trim() || !personalInfo.phone.trim() || !personalInfo.email.trim()) {
+      alert('Please fill in all fields: address, phone, and email');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(personalInfo.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    setModalStep(2);
+  };
+
+  const handleBackStep = () => {
+    setModalStep(1);
+  };
+
+  const handleResumeChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please upload a PDF or Word document');
+        return;
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+
+      setResumeFile(file);
+      setResumeFileName(file.name);
+    }
+  };
+
   const handleApplyForJob = async () => {
-    if (!coverLetter.trim()) {
-      alert('Please write a cover letter before applying');
+    // if (!coverLetter.trim()) {
+    //   alert('Please write a cover letter before applying');
+    //   return;
+    // }
+
+    if (!resumeFile) {
+      alert('Please upload your resume/CV');
       return;
     }
 
     try {
       setApplying(true);
       const token = await getToken({ template: "default" });
+
+      // Upload resume file to get URL
+      let resumeUrl = null;
+      try {
+        const resumeFormData = new FormData();
+        resumeFormData.append('resume', resumeFile);
+
+        const uploadResponse = await axios.post(
+          'http://localhost:5000/api/applications/upload-resume',
+          resumeFormData,
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`
+              // Don't set Content-Type - axios will set it automatically with the correct boundary
+            }
+          }
+        );
+
+        if (uploadResponse.data.success) {
+          // Store the Cloudinary URL
+          resumeUrl = uploadResponse.data.resumeUrl;
+        } else {
+          throw new Error(uploadResponse.data.message || 'Failed to upload resume');
+        }
+      } catch (uploadError) {
+        console.error('Error uploading resume:', uploadError);
+        if (uploadError.response?.data?.message) {
+          alert(uploadError.response.data.message);
+        } else {
+          alert('Failed to upload resume file. Please try again.');
+        }
+        setApplying(false);
+        return;
+      }
+
+      // Build cover letter with personal info (cover letter is optional)
+      let coverLetterWithInfo = null;
+      if (coverLetter.trim()) {
+        coverLetterWithInfo = `${coverLetter}\n\n--- Contact Information ---\nAddress: ${personalInfo.address}\nPhone: ${personalInfo.phone}\nEmail: ${personalInfo.email}`;
+      } else {
+        // If no cover letter, just include personal info
+        coverLetterWithInfo = `--- Contact Information ---\nAddress: ${personalInfo.address}\nPhone: ${personalInfo.phone}\nEmail: ${personalInfo.email}`;
+      }
       
       await axios.post(
         `http://localhost:5000/api/applications/${id}`,
-        { coverLetter },
+        { 
+          coverLetter: coverLetterWithInfo,
+          resumeUrl: resumeUrl // For now using data URL, can be changed to actual URL if we create upload endpoint
+        },
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
 
       setShowApplyModal(false);
+      setModalStep(1);
       setApplicationStatus({ hasApplied: true, application: { status: 'pending' } });
+      // Reset form
+      setPersonalInfo({ address: '', phone: '', email: '' });
+      setCoverLetter('');
+      setResumeFile(null);
+      setResumeFileName('');
       alert('Application submitted successfully!');
     } catch (err) {
       console.error('Error applying for job:', err);
-      if (err.response?.status === 400) {
+      if (err.response?.data?.message) {
         alert(err.response.data.message);
+      } else if (err.response?.status === 400) {
+        alert(err.response.data.message || 'Invalid request. Please check your information.');
+      } else if (err.response?.status === 403) {
+        alert('You do not have permission to perform this action.');
+      } else if (err.response?.status === 404) {
+        alert('Job not found. Please refresh the page and try again.');
       } else {
-        alert('Failed to submit application. Please try again.');
+        alert(`Failed to submit application: ${err.message || 'Please try again.'}`);
       }
     } finally {
       setApplying(false);
@@ -310,7 +423,14 @@ const JobDetailPage = () => {
                 </div>
               ) : (
                 <button 
-                  onClick={() => setShowApplyModal(true)}
+                  onClick={() => {
+                    setModalStep(1);
+                    setPersonalInfo({ address: '', phone: '', email: '' });
+                    setCoverLetter('');
+                    setResumeFile(null);
+                    setResumeFileName('');
+                    setShowApplyModal(true);
+                  }}
                   className="flex items-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors font-medium"
                 >
                   <UserCheck size={16} className="mr-2" />
@@ -395,50 +515,171 @@ const JobDetailPage = () => {
       {/* Apply Modal */}
       {showApplyModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-2xl w-full">
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h3 className="text-2xl font-semibold text-white mb-4">Apply for {job.title}</h3>
             
-            <div className="mb-6">
-              <p className="text-gray-300 mb-4">
-                You are applying for <span className="font-semibold text-white">{job.title}</span> at <span className="font-semibold text-white">{job.company}</span>
-              </p>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Cover Letter <span className="text-red-400">*</span>
-                </label>
-                <textarea
-                  value={coverLetter}
-                  onChange={(e) => setCoverLetter(e.target.value)}
-                  placeholder="Tell us why you're a great fit for this role..."
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors resize-none"
-                  rows={8}
-                  required
-                />
-                <p className="text-xs text-gray-400 mt-2">
-                  Tip: Highlight your relevant experience and skills that match the job requirements
-                </p>
+            {/* Step Indicator */}
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex items-center">
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${modalStep >= 1 ? 'bg-orange-500 border-orange-500 text-white' : 'bg-gray-700 border-gray-600 text-gray-400'}`}>
+                  1
+                </div>
+                <div className={`w-24 h-1 ${modalStep >= 2 ? 'bg-orange-500' : 'bg-gray-700'}`}></div>
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${modalStep >= 2 ? 'bg-orange-500 border-orange-500 text-white' : 'bg-gray-700 border-gray-600 text-gray-400'}`}>
+                  2
+                </div>
               </div>
             </div>
 
+            {/* Step 1: Personal Information */}
+            {modalStep === 1 && (
+              <div className="mb-6">
+                <p className="text-gray-300 mb-6">
+                  Please provide your contact information to continue with your application.
+                </p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Address <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={personalInfo.address}
+                      onChange={(e) => setPersonalInfo({ ...personalInfo, address: e.target.value })}
+                      placeholder="Enter your full address"
+                      className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Phone Number <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={personalInfo.phone}
+                      onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })}
+                      placeholder="Enter your phone number"
+                      className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Email <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={personalInfo.email}
+                      onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
+                      placeholder="Enter your email address"
+                      className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Resume and Cover Letter */}
+            {modalStep === 2 && (
+              <div className="mb-6">
+                <p className="text-gray-300 mb-6">
+                  Upload your resume/CV and write a cover letter to complete your application.
+                </p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Resume/CV <span className="text-red-400">*</span>
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <label className="flex-1 cursor-pointer">
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleResumeChange}
+                          className="hidden"
+                        />
+                        <div className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white hover:border-orange-500 transition-colors text-center">
+                          {resumeFileName || 'Choose file (PDF or Word document)'}
+                        </div>
+                      </label>
+                    </div>
+                    {resumeFileName && (
+                      <p className="text-xs text-green-400 mt-2">
+                        ✓ {resumeFileName} selected
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-400 mt-2">
+                      Accepted formats: PDF, DOC, DOCX (Max 5MB)
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Want to write anything else?
+                    </label>
+                    <textarea
+                      value={coverLetter}
+                      onChange={(e) => setCoverLetter(e.target.value)}
+                      placeholder="Eg: Tell us why you're a great fit for this role..."
+                      className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors resize-none"
+                      rows={5}
+                    />
+                    <p className="text-xs text-gray-400 mt-2">
+                      Tip: Highlight your relevant experience and skills that match the job requirements
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowApplyModal(false);
-                  setCoverLetter('');
-                }}
-                className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                disabled={applying}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleApplyForJob}
-                disabled={applying || !coverLetter.trim()}
-                className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {applying ? 'Submitting...' : 'Submit Application'}
-              </button>
+              {modalStep === 1 ? (
+                <>
+                  <button
+                    onClick={() => {
+                      setShowApplyModal(false);
+                      setModalStep(1);
+                      setPersonalInfo({ address: '', phone: '', email: '' });
+                      setCoverLetter('');
+                      setResumeFile(null);
+                      setResumeFileName('');
+                    }}
+                    className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                    disabled={applying}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleNextStep}
+                    className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+                  >
+                    Next
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleBackStep}
+                    className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                    disabled={applying}
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={handleApplyForJob}
+                    disabled={applying || !resumeFile}
+                    className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {applying ? 'Submitting...' : 'Submit Application'}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

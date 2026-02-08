@@ -251,3 +251,9 @@ VALUES
 (2, 'professional_development', 'Training Programs', 'Internal skill development and certification programs', true),
 
 (2, 'time_off', 'Paid Leave Policy', 'Annual paid leaves including sick and casual leaves', true);
+
+
+ALTER TABLE messages
+  ADD COLUMN attachment_original_name VARCHAR(255) NULL AFTER content,
+  ADD COLUMN attachment_storage_name VARCHAR(255) NULL AFTER attachment_original_name;
+
