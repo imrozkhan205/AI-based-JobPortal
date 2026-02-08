@@ -1,7 +1,50 @@
-/node_modules
-<<<<<<< HEAD
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment variables
 .env
-=======
+.env.local
+.env.*.local
 .env/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Uploads (if containing user-generated content)
 uploads/
->>>>>>> 24e91c4 (Users can now send docs to each other)
+uploads/*
+!uploads/.gitkeep
+
+# Testing
+coverage/
+.nyc_output/
