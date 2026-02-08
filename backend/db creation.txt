@@ -1,253 +1,31 @@
-CREATE TABLE `users` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `clerk_id` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `role` enum('jobseeker','employer') DEFAULT 'jobseeker',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `clerk_id` (`clerk_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+create database job_portal;
+use job_portal;
+CREATE TABLE jobs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    company VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    salary_range VARCHAR(50),
+    job_type ENUM('Full-Time', 'Part-Time', 'Contract', 'Internship') NOT NULL,
+    posted_by INT NOT NULL, -- user_id of recruiter
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+select * from jobs;
 
-
-
-CREATE TABLE `jobs` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) NOT NULL,
-  `description` text NOT NULL,
-  `company` varchar(255) NOT NULL,
-  `location` varchar(255) NOT NULL,
-  `salary_range` varchar(50) DEFAULT NULL,
-  `currency` varchar(8) DEFAULT NULL,
-  `job_type` enum('Full-Time','Part-Time','Contract','Internship') NOT NULL,
-  `posted_by` int NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `requirements` text,
-  `benefits` text,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-
-
-CREATE TABLE `applications` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `job_id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `cover_letter` text,
-  `resume_url` varchar(500) DEFAULT NULL,
-  `status` enum('pending','reviewed','accepted','rejected') DEFAULT 'pending',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_application` (`job_id`,`user_id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `applications_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `applications_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-
-CREATE TABLE IF NOT EXISTS messages (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  application_id INT NOT NULL,
-  sender_id INT NOT NULL,
-  content TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
-  FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
-  INDEX idx_application_created (application_id, created_at)
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  clerk_id VARCHAR(255) NOT NULL UNIQUE,
+  email VARCHAR(255) NOT NULL,
+  role ENUM('jobseeker', 'employer') DEFAULT 'jobseeker'
 );
 
-
-
-CREATE TABLE `companies` (
- `id` INT NOT NULL AUTO_INCREMENT,
- `name` VARCHAR(255) NOT NULL,
- `logo_url` VARCHAR(500) DEFAULT NULL,
- `website` VARCHAR(255) DEFAULT NULL,
- `industry` VARCHAR(100) DEFAULT NULL,
- `company_size` ENUM('1-10', '11-50', '51-200', '201-500', '501-1000','1000+') DEFAULT NULL,
- `founded_year` INT DEFAULT NULL,
- `headquarters` VARCHAR(255) DEFAULT NULL,
- `description` TEXT,
- `mission_statement` TEXT,
- `linkedin_url` VARCHAR(500) DEFAULT NULL,
- `glassdoor_url` VARCHAR(500) DEFAULT NULL,
- `is_verified` BOOLEAN DEFAULT FALSE,
- `created_by` INT DEFAULT NULL,
- `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
- `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
- PRIMARY KEY (`id`),
- UNIQUE KEY `unique_company_name` (`name`)
-);
-
-
-
-CREATE TABLE IF NOT EXISTS `companies` (
- `id` INT NOT NULL AUTO_INCREMENT,
- `name` VARCHAR(255) NOT NULL,
- `logo_url` VARCHAR(500) DEFAULT NULL,
- `website` VARCHAR(255) DEFAULT NULL,
- `industry` VARCHAR(100) DEFAULT NULL,
- `company_size` ENUM('1-10', '11-50', '51-200', '201-500', '501-1000','1000+') DEFAULT NULL,
- `founded_year` INT DEFAULT NULL,
- `headquarters` VARCHAR(255) DEFAULT NULL,
- `description` TEXT,
- `mission_statement` TEXT,
- `linkedin_url` VARCHAR(500) DEFAULT NULL,
- `glassdoor_url` VARCHAR(500) DEFAULT NULL,
- `is_verified` BOOLEAN DEFAULT FALSE,
- `created_by` INT DEFAULT NULL,
- `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
- `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
- PRIMARY KEY (`id`),
- UNIQUE KEY `unique_company_name` (`name`)
-);
-
-INSERT INTO companies (name, industry, description, headquarters)
-VALUES
-('Google', 'Technology', 'Innovative company with flexible work culture', 'USA'),
-('Infosys', 'IT Services', 'Global consulting company with corporate culture', 'India'),
-('TCS', 'IT Services', 'Large enterprise IT company with structured work environment', 'India');
-
-
-CREATE TABLE company_culture (
-  id INT NOT NULL AUTO_INCREMENT,
-  company_id INT NOT NULL,
-
-  work_life_balance_score INT DEFAULT 0,
-  career_growth_score INT DEFAULT 0,
-  compensation_score INT DEFAULT 0,
-  management_score INT DEFAULT 0,
-  culture_score INT DEFAULT 0,
-  diversity_score INT DEFAULT 0,
-
-  overall_rating DECIMAL(2,1) DEFAULT 0.0,
-
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-  PRIMARY KEY (id),
-
-  UNIQUE KEY unique_company_culture (company_id),
-
-  CONSTRAINT fk_company_culture
-    FOREIGN KEY (company_id)
-    REFERENCES companies(id)
-    ON DELETE CASCADE
-);
-
-INSERT INTO company_culture 
-(company_id, work_life_balance_score, career_growth_score, culture_score, overall_rating)
-VALUES
-(1, 85, 90, 88, 4.5),
-(2, 75, 78, 76, 4.0),
-(3, 65, 70, 68, 3.6);
-
-CREATE TABLE culture_attributes (
- id INT NOT NULL AUTO_INCREMENT,
- company_id INT NOT NULL,
- attribute_category ENUM(
-   'work_style',
-   'environment',
-   'values',
-   'perks',
-   'tech_stack'
- ) NOT NULL,
-
- attribute_name VARCHAR(100) NOT NULL,
- attribute_value VARCHAR(255),
- created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
- PRIMARY KEY (id),
-
- KEY company_id (company_id),
- KEY attribute_category (attribute_category),
- KEY attribute_name (attribute_name),
-
- FOREIGN KEY (company_id)
- REFERENCES companies(id)
- ON DELETE CASCADE
-);
-
-INSERT INTO culture_attributes
-(company_id, attribute_category, attribute_name)
-VALUES
-(1, 'work_style', 'Remote Friendly'),
-(1, 'environment', 'Fast Paced'),
-(1, 'values', 'Innovation'),
-(1, 'perks', 'Flexible Hours'),
-(1, 'tech_stack', 'AI/ML');
-
-INSERT INTO culture_attributes
-(company_id, attribute_category, attribute_name)
-VALUES
-(2, 'work_style', 'Hybrid Work'),
-(2, 'environment', 'Corporate Culture'),
-(2, 'values', 'Team Collaboration'),
-(2, 'perks', 'Health Insurance'),
-(2, 'tech_stack', 'Cloud Computing');
-
-INSERT INTO culture_attributes
-(company_id, attribute_category, attribute_name)
-VALUES
-(3, 'work_style', 'Office Based'),
-(3, 'environment', 'Structured Environment'),
-(3, 'values', 'Process Driven'),
-(3, 'perks', 'Job Security'),
-(3, 'tech_stack', 'Enterprise Systems');
-
-
-CREATE TABLE `company_benefits` (
- `id` INT NOT NULL AUTO_INCREMENT,
- `company_id` INT NOT NULL,
- `benefit_category` ENUM('health', 'financial', 'lifestyle',
-'professional_development', 'time_off', 'family') NOT NULL,
- `benefit_name` VARCHAR(255) NOT NULL, -- "Health Insurance", "401k Match", "Remote Work"
- `benefit_description` TEXT,
- `is_verified` BOOLEAN DEFAULT FALSE,
- `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
- `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE
-CURRENT_TIMESTAMP,
- PRIMARY KEY (`id`),
- KEY `company_id` (`company_id`),
- KEY `benefit_category` (`benefit_category`),
- CONSTRAINT `company_benefits_ibfk_1` FOREIGN KEY (`company_id`)
-REFERENCES `companies` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-INSERT INTO company_benefits
-(company_id, benefit_category, benefit_name, benefit_description, is_verified)
-VALUES
-(3, 'health', 'Health Insurance', 'Full medical coverage for employee and family', true),
-
-(3, 'financial', 'Provident Fund', 'Company matched PF contribution', true),
-
-(3, 'lifestyle', 'Hybrid Work', 'Work from home option 2 days per week', true),
-
-(3, 'professional_development', 'Training Programs', 'Free internal certification programs', true),
-
-(3, 'time_off', 'Paid Leave', '24 paid leaves per year', true);
-
-INSERT INTO company_benefits
-(company_id, benefit_category, benefit_name, benefit_description, is_verified)
-VALUES
-(1, 'health', 'Premium Health Insurance', 'Comprehensive medical insurance for employees and dependents', true),
-
-(1, 'financial', 'Stock Options (ESOP)', 'Employee stock purchase and ownership plans', true),
-
-(1, 'lifestyle', 'Free Meals & Snacks', 'Unlimited free meals and healthy snacks at office campus', true),
-
-(1, 'professional_development', 'Learning Budget', 'Annual learning and certification budget for employees', true),
-
-(1, 'time_off', 'Flexible Paid Leave', 'Flexible paid vacation policy and mental health days', true);
-
-INSERT INTO company_benefits
-(company_id, benefit_category, benefit_name, benefit_description, is_verified)
-VALUES
-(2, 'health', 'Medical Insurance', 'Health insurance coverage for employees and family members', true),
-
-(2, 'financial', 'Provident Fund (PF)', 'Company matched provident fund contribution', true),
-
-(2, 'lifestyle', 'Hybrid Work Model', 'Option to work from home on selected days', true),
-
-(2, 'professional_development', 'Training Programs', 'Internal skill development and certification programs', true),
-
-(2, 'time_off', 'Paid Leave Policy', 'Annual paid leaves including sick and casual leaves', true);
+ALTER TABLE jobs ADD COLUMN currency VARCHAR(8) NULL AFTER salary_range;
+UPDATE jobs SET currency = 'USD' WHERE currency IS NULL;
+select * from users;
+show tables;
+describe jobs;
+ALTER TABLE jobs 
+ADD COLUMN requirements TEXT,
+ADD COLUMN benefits TEXT;
