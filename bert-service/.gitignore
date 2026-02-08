@@ -1,5 +1,9 @@
 Lib/
 Scripts/
 share/
+<<<<<<< HEAD
 venv/
 venv/pyvenv.cfg
+=======
+node_modules/
+>>>>>>> 69a79fb (Fix gitignore and stop tracking env and venv files)
