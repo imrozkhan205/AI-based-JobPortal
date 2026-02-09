@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import jobRoutes from './routes/job.route.js'
 import userRoutes from './routes/user.route.js'
 import authRoutes from './routes/auth.route.js'
@@ -13,6 +15,8 @@ import companyRoutes from './routes/company.route.js';
 import reviewRoutes from "./routes/review.routes.js";
 
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const app = express();
@@ -25,7 +29,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
-app.use(express.json());
+
+// Body parsing middleware - must be before routes
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Public route
 app.get('/api/public', (req, res) => {

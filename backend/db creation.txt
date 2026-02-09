@@ -385,5 +385,9 @@ CREATE TABLE `saved_companies` (
 REFERENCES `companies` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-SELECT id, helpful_count, not_helpful_count
-FROM employee_reviews;
+
+
+ALTER TABLE messages
+  ADD COLUMN attachment_original_name VARCHAR(255) NULL AFTER content,
+  ADD COLUMN attachment_storage_name VARCHAR(255) NULL AFTER attachment_original_name;
+
