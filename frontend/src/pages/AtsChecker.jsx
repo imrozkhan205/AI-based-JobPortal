@@ -100,61 +100,61 @@ const ATSChecker = () => {
   };
 
   const getScoreColor = (score) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 75) return 'text-blue-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 90) return 'text-emerald-400';
+    if (score >= 75) return 'text-blue-400';
+    if (score >= 60) return 'text-yellow-400';
+    return 'text-red-400';
   };
 
   const getScoreBgColor = (score) => {
-    if (score >= 90) return 'bg-green-100';
-    if (score >= 75) return 'bg-blue-100';
-    if (score >= 60) return 'bg-yellow-100';
-    return 'bg-red-100';
+    if (score >= 90) return 'bg-emerald-500/10 border border-emerald-500/20';
+    if (score >= 75) return 'bg-blue-500/10 border border-blue-500/20';
+    if (score >= 60) return 'bg-yellow-500/10 border border-yellow-500/20';
+    return 'bg-red-500/10 border border-red-500/20';
   };
 
   const getStatusIcon = (status) => {
-    if (status === 'good') return <CheckCircle className="w-5 h-5 text-green-600" />;
-    if (status === 'warning') return <AlertCircle className="w-5 h-5 text-yellow-600" />;
-    return <XCircle className="w-5 h-5 text-red-600" />;
+    if (status === 'good') return <CheckCircle className="w-5 h-5 text-emerald-400" />;
+    if (status === 'warning') return <AlertCircle className="w-5 h-5 text-yellow-400" />;
+    return <XCircle className="w-5 h-5 text-red-400" />;
   };
 
   const getStatusColor = (status) => {
-    if (status === 'good') return 'text-green-700 bg-green-50 border-green-200';
-    if (status === 'warning') return 'text-yellow-700 bg-yellow-50 border-yellow-200';
-    return 'text-red-700 bg-red-50 border-red-200';
+    if (status === 'good') return 'text-emerald-200 bg-emerald-500/10 border-emerald-500/30';
+    if (status === 'warning') return 'text-yellow-200 bg-yellow-500/10 border-yellow-500/30';
+    return 'text-red-200 bg-red-500/10 border-red-500/30';
   };
 
   const getRecommendationIcon = (type) => {
-    if (type === 'critical') return <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />;
-    if (type === 'warning') return <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />;
-    return <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />;
+    if (type === 'critical') return <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />;
+    if (type === 'warning') return <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0" />;
+    return <CheckCircle className="w-5 h-5 text-blue-400 flex-shrink-0" />;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Award className="w-12 h-12 text-blue-600 mr-3" />
-            <h1 className="text-4xl font-bold text-gray-900">ATS Resume Checker</h1>
+            <Award className="w-12 h-12 text-blue-400 mr-3" />
+            <h1 className="text-4xl font-bold text-white">ATS Resume Checker</h1>
           </div>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-300 text-lg">
             Analyze your resume's ATS compatibility and get actionable recommendations
           </p>
         </div>
 
         {!results ? (
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="bg-gray-900/60 border border-gray-700 rounded-2xl shadow-xl p-8">
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+              <label className="block text-sm font-semibold text-gray-200 mb-3">
                 Upload Resume (PDF or DOCX)
               </label>
               <div
                 className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
                   dragActive
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-300 hover:border-blue-400 bg-gray-50'
+                    ? 'border-blue-400 bg-blue-500/10'
+                    : 'border-gray-700 hover:border-blue-400 bg-gray-900/40'
                 }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -170,10 +170,10 @@ const ATSChecker = () => {
                 />
                 <label htmlFor="file-upload" className="cursor-pointer">
                   <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-lg font-medium text-gray-700 mb-2">
+                  <p className="text-lg font-medium text-gray-100 mb-2">
                     {file ? file.name : 'Drag and drop your resume here'}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-400">
                     or click to browse (Max 5MB)
                   </p>
                 </label>
@@ -181,11 +181,11 @@ const ATSChecker = () => {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+              <label className="block text-sm font-semibold text-gray-200 mb-3">
                 Job Description (Optional)
               </label>
               <textarea
-                className="w-full border-2 border-gray-300 rounded-xl p-4 text-gray-700 focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border-2 border-gray-700 bg-gray-900/60 rounded-xl p-4 text-gray-100 placeholder-gray-500 focus:border-blue-400 focus:outline-none transition-colors"
                 rows="6"
                 placeholder="Paste the job description here to see how well your resume matches..."
                 value={jobDescription}
@@ -194,9 +194,9 @@ const ATSChecker = () => {
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start">
-                <XCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
-                <p className="text-red-700">{error}</p>
+              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start">
+                <XCircle className="w-5 h-5 text-red-400 mr-3 flex-shrink-0 mt-0.5" />
+                <p className="text-red-300">{error}</p>
               </div>
             )}
 
@@ -205,8 +205,8 @@ const ATSChecker = () => {
               disabled={!file || loading}
               className={`w-full py-4 rounded-xl font-semibold text-white text-lg transition-all ${
                 !file || loading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                  ? 'bg-gray-700 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-500 shadow-lg hover:shadow-xl'
               }`}
             >
               {loading ? (
@@ -224,12 +224,12 @@ const ATSChecker = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="bg-gray-900/60 border border-gray-700 rounded-2xl shadow-xl p-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Analysis Results</h2>
+                <h2 className="text-2xl font-bold text-white">Analysis Results</h2>
                 <button
                   onClick={resetForm}
-                  className="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-colors"
+                  className="px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-gray-200 transition-colors border border-gray-700"
                 >
                   Analyze Another
                 </button>
@@ -239,10 +239,10 @@ const ATSChecker = () => {
                 <div className={`text-6xl font-bold ${getScoreColor(results.score)} mb-2`}>
                   {results.score}
                 </div>
-                <div className="text-xl font-semibold text-gray-700 mb-1">
+                <div className="text-xl font-semibold text-gray-200 mb-1">
                   {results.grade}
                 </div>
-                <div className="text-gray-600">ATS Compatibility Score</div>
+                <div className="text-gray-400">ATS Compatibility Score</div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -300,30 +300,30 @@ const ATSChecker = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Mail className="w-5 h-5 mr-2 text-blue-600" />
+                <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                    <Mail className="w-5 h-5 mr-2 text-blue-400" />
                     Contact Information
                   </h3>
                   <div className="space-y-2">
-                    <div className="flex items-center text-gray-700">
+                    <div className="flex items-center text-gray-200">
                       <Mail className="w-4 h-4 mr-2" />
                       Emails: {results.contactInfo.emails.length > 0 ? results.contactInfo.emails.join(', ') : 'None found'}
                     </div>
-                    <div className="flex items-center text-gray-700">
+                    <div className="flex items-center text-gray-200">
                       <Phone className="w-4 h-4 mr-2" />
                       Phones: {results.contactInfo.phones.length > 0 ? results.contactInfo.phones.join(', ') : 'None found'}
                     </div>
-                    <div className="flex items-center text-gray-700">
+                    <div className="flex items-center text-gray-200">
                       <Linkedin className="w-4 h-4 mr-2" />
                       LinkedIn: {results.contactInfo.linkedin.length > 0 ? 'Found' : 'Not found'}
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Briefcase className="w-5 h-5 mr-2 text-blue-600" />
+                <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                    <Briefcase className="w-5 h-5 mr-2 text-blue-400" />
                     Resume Sections
                   </h3>
                   <div className="grid md:grid-cols-3 gap-3">
@@ -331,7 +331,7 @@ const ATSChecker = () => {
                       <div
                         key={section}
                         className={`flex items-center p-3 rounded-lg ${
-                          present ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                          present ? 'bg-emerald-500/10 text-emerald-200 border border-emerald-500/30' : 'bg-red-500/10 text-red-200 border border-red-500/30'
                         }`}
                       >
                         {present ? (
@@ -345,16 +345,16 @@ const ATSChecker = () => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Code className="w-5 h-5 mr-2 text-blue-600" />
+                <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                    <Code className="w-5 h-5 mr-2 text-blue-400" />
                     Keywords Found ({results.keywordCount})
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {results.keywords.map((keyword, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                        className="px-3 py-1 bg-blue-500/15 text-blue-200 border border-blue-500/30 rounded-full text-sm font-medium"
                       >
                         {keyword}
                       </span>
@@ -363,35 +363,35 @@ const ATSChecker = () => {
                 </div>
 
                 {results.jobComparison && (
-                  <div className="bg-gray-50 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <Target className="w-5 h-5 mr-2 text-blue-600" />
+                  <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                      <Target className="w-5 h-5 mr-2 text-blue-400" />
                       Job Match Analysis
                     </h3>
                     <div className="mb-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-gray-700 font-medium">Match Percentage</span>
-                        <span className="text-2xl font-bold text-blue-600">
+                        <span className="text-gray-200 font-medium">Match Percentage</span>
+                        <span className="text-2xl font-bold text-blue-400">
                           {results.jobComparison.matchPercentage}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div className="w-full bg-gray-700 rounded-full h-3">
                         <div
-                          className="bg-blue-600 h-3 rounded-full transition-all"
+                          className="bg-blue-500 h-3 rounded-full transition-all"
                           style={{ width: `${results.jobComparison.matchPercentage}%` }}
                         />
                       </div>
                     </div>
                     {results.jobComparison.missingKeywords.length > 0 && (
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">
+                        <p className="text-sm font-medium text-gray-200 mb-2">
                           Missing Keywords:
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {results.jobComparison.missingKeywords.map((keyword, index) => (
                             <span
                               key={index}
-                              className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium"
+                              className="px-3 py-1 bg-red-500/15 text-red-200 border border-red-500/30 rounded-full text-sm font-medium"
                             >
                               {keyword}
                             </span>
@@ -403,23 +403,23 @@ const ATSChecker = () => {
                 )}
 
                 {results.recommendations.length > 0 && (
-                  <div className="bg-gray-50 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
+                  <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                      <TrendingUp className="w-5 h-5 mr-2 text-blue-400" />
                       Recommendations
                     </h3>
                     <div className="space-y-3">
                       {results.recommendations.map((rec, index) => (
                         <div
                           key={index}
-                          className="flex items-start p-4 bg-white rounded-lg border-2 border-gray-200"
+                          className="flex items-start p-4 bg-gray-900/60 rounded-lg border-2 border-gray-700"
                         >
                           {getRecommendationIcon(rec.type)}
                           <div className="ml-3">
-                            <span className="text-xs font-semibold text-gray-500 uppercase">
+                            <span className="text-xs font-semibold text-gray-400 uppercase">
                               {rec.category}
                             </span>
-                            <p className="text-gray-700 mt-1">{rec.message}</p>
+                            <p className="text-gray-200 mt-1">{rec.message}</p>
                           </div>
                         </div>
                       ))}

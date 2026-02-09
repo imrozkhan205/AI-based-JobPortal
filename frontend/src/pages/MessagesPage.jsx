@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAxios } from "../lib/axios";
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send, Paperclip, FileText, X } from "lucide-react";
 
 function formatTime(dateStr) {
   const d = new Date(dateStr);
@@ -18,10 +18,12 @@ export default function MessagesPage() {
   const [selected, setSelected] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
@@ -67,17 +69,46 @@ export default function MessagesPage() {
   const handleSend = async (e) => {
     e?.preventDefault();
     const text = input.trim();
-    if (!text || !selected || sending) return;
+    if ((!text && !selectedFile) || !selected || sending) return;
     setSending(true);
+    const contentToSend = text || "";
     setInput("");
+    const fileToSend = selectedFile;
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     try {
-      const res = await api.post(`/messages/${selected.applicationId}`, { content: text });
+      let res;
+      if (fileToSend) {
+        const formData = new FormData();
+        formData.append("content", contentToSend);
+        formData.append("attachment", fileToSend);
+        res = await api.post(`/messages/${selected.applicationId}`, formData);
+      } else {
+        res = await api.post(`/messages/${selected.applicationId}`, { content: contentToSend });
+      }
       setMessages((prev) => [...prev, { ...res.data.message, isOwn: true }]);
     } catch (err) {
       console.error("Error sending message:", err);
-      setInput(text);
+      setInput(contentToSend);
+      if (fileToSend) setSelectedFile(fileToSend);
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleDownloadAttachment = async (m) => {
+    if (!m.attachmentUrl || !m.attachment_original_name) return;
+    try {
+      const url = m.attachmentUrl.startsWith("/api") ? m.attachmentUrl.slice(4) : m.attachmentUrl;
+      const res = await api.get(url, { responseType: "blob" });
+      const blob = new Blob([res.data]);
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = m.attachment_original_name;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (err) {
+      console.error("Error downloading attachment:", err);
     }
   };
 
@@ -160,7 +191,23 @@ export default function MessagesPage() {
                             : "bg-gray-700 text-gray-100 rounded-bl-md"
                         }`}
                       >
-                        <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
+                        {m.content && m.content !== "(attachment)" && (
+                          <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
+                        )}
+                        {m.attachment_original_name && (
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadAttachment(m)}
+                            className={`mt-1 flex items-center gap-2 w-full text-left px-2 py-1.5 rounded-lg border transition ${
+                              m.isOwn
+                                ? "border-blue-400/50 bg-blue-500/30 hover:bg-blue-500/50 text-white"
+                                : "border-gray-500/50 bg-gray-600/50 hover:bg-gray-500/50 text-gray-100"
+                            }`}
+                          >
+                            <FileText size={16} />
+                            <span className="text-sm truncate flex-1">{m.attachment_original_name}</span>
+                          </button>
+                        )}
                         <p className={`text-xs mt-1 ${m.isOwn ? "text-blue-200" : "text-gray-400"}`}>
                           {formatTime(m.created_at)}
                         </p>
@@ -171,25 +218,58 @@ export default function MessagesPage() {
                 </div>
 
                 <form onSubmit={handleSend} className="p-4 border-t border-gray-800">
+                  {selectedFile && (
+                    <div className="mb-2 flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700">
+                      <FileText size={16} className="text-gray-400" />
+                      <span className="text-sm text-gray-300 truncate flex-1">{selectedFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                        className="p-0.5 rounded hover:bg-gray-600 text-gray-400"
+                        aria-label="Remove file"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  )}
                   <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) setSelectedFile(f);
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-gray-200 flex items-center gap-1"
+                      title="Attach PDF or Word (doc, docx)"
+                    >
+                      <Paperclip size={18} />
+                    </button>
                     <input
                       type="text"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      placeholder="Type a message..."
+                      placeholder="Type a message or attach a file..."
                       className="flex-1 px-4 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       maxLength={5000}
                       disabled={sending}
                     />
                     <button
                       type="submit"
-                      disabled={!input.trim() || sending}
+                      disabled={(!input.trim() && !selectedFile) || sending}
                       className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       <Send size={18} />
                       Send
                     </button>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1 px-1">PDF, Word (.doc, .docx) — max 10MB</p>
                 </form>
               </>
             ) : (

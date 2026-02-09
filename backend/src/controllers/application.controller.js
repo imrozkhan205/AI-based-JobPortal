@@ -1,12 +1,32 @@
 // backend/src/controllers/application.controller.js
 import pool from "../database/db.js";
+import { v2 as cloudinary } from 'cloudinary';
 
 // Apply for a job
 export const applyForJob = async (req, res) => {
     try {
         const { jobId } = req.params;
-        const clerkId = req.user.sub;
-        const { coverLetter, resumeUrl } = req.body;
+        const clerkId = req.user?.sub;
+        
+        // Debug logging
+        console.log("📥 Apply for job request:", {
+            jobId,
+            clerkId,
+            hasBody: !!req.body,
+            bodyType: typeof req.body,
+            contentType: req.headers['content-type'],
+            bodyKeys: req.body ? Object.keys(req.body) : 'N/A'
+        });
+        
+        // Safety check for req.body
+        if (!req.body) {
+            console.error("❌ req.body is undefined. Headers:", req.headers);
+            return res.status(400).json({ 
+                message: "Request body is missing or invalid" 
+            });
+        }
+        
+        const { coverLetter, resumeUrl } = req.body || {};
 
         // Get user's database ID
         const [userRows] = await pool.query(
@@ -394,6 +414,134 @@ export const checkApplicationStatus = async (req, res) => {
         res.status(500).json({ 
             message: "Server error", 
             error: error.message 
+        });
+    }
+};
+
+// Configure Cloudinary (will be initialized when first used)
+let cloudinaryConfigured = false;
+
+const configureCloudinary = () => {
+    if (!cloudinaryConfigured) {
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+        const apiKey = process.env.CLOUDINARY_API_KEY;
+        const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+        if (!cloudName || !apiKey || !apiSecret) {
+            throw new Error('Cloudinary credentials are missing. Please check your .env file.');
+        }
+
+        cloudinary.config({
+            cloud_name: cloudName,
+            api_key: apiKey,
+            api_secret: apiSecret
+        });
+        cloudinaryConfigured = true;
+        console.log("✅ Cloudinary configured successfully");
+    }
+};
+
+// Upload resume file for application to Cloudinary
+export const uploadResume = async (req, res) => {
+    try {
+        // Debug logging
+        console.log("📤 Upload resume request:", {
+            hasFile: !!req.file,
+            fileField: req.file ? req.file.fieldname : 'N/A',
+            bodyKeys: Object.keys(req.body || {}),
+            contentType: req.headers['content-type']
+        });
+
+        // Configure Cloudinary if not already configured
+        try {
+            configureCloudinary();
+        } catch (configError) {
+            console.error("❌ Cloudinary configuration error:", configError);
+            return res.status(500).json({
+                success: false,
+                message: "Cloudinary configuration error. Please check your environment variables.",
+                error: configError.message
+            });
+        }
+
+        if (!req.file) {
+            console.error("❌ No file in request:", {
+                files: req.files,
+                body: req.body,
+                headers: req.headers
+            });
+            return res.status(400).json({
+                success: false,
+                message: 'No resume file uploaded. Please ensure the file field is named "resume" and the file is valid.'
+            });
+        }
+
+        console.log("📤 Uploading resume to Cloudinary:", {
+            filename: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size
+        });
+
+        // Generate unique public_id (without folder, as folder option handles it)
+        const publicId = `application-resume-${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+
+        // Upload to Cloudinary using upload_stream for better handling of raw files
+        // PDFs stored as 'raw' can be viewed directly in the browser via secure_url
+        const result = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    resource_type: 'raw', // Use 'raw' for PDFs and documents
+                    folder: 'resumes', // Organize files in a folder
+                    public_id: publicId,
+                    use_filename: false,
+                    overwrite: false
+                },
+                (error, result) => {
+                    if (error) {
+                        console.error("❌ Cloudinary upload error:", error);
+                        reject(error);
+                    } else {
+                        resolve(result);
+                    }
+                }
+            );
+
+            // Handle stream errors
+            uploadStream.on('error', (error) => {
+                console.error("❌ Stream error:", error);
+                reject(error);
+            });
+
+            // Write buffer to stream
+            if (req.file.buffer) {
+                uploadStream.write(req.file.buffer);
+                uploadStream.end();
+            } else {
+                reject(new Error('File buffer is empty'));
+            }
+        });
+
+        console.log("✅ Resume uploaded to Cloudinary successfully:", result.public_id);
+        
+        res.status(200).json({
+            success: true,
+            message: "Resume uploaded successfully",
+            resumeUrl: result.secure_url, // Cloudinary secure URL
+            publicId: result.public_id,
+            filename: req.file.originalname
+        });
+
+    } catch (error) {
+        console.error("❌ Error uploading resume to Cloudinary:", error);
+        console.error("Error details:", {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        res.status(500).json({
+            success: false,
+            message: "Failed to upload resume to cloud storage",
+            error: error.message || "Unknown error occurred"
         });
     }
 };
