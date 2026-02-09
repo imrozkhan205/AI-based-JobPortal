@@ -252,6 +252,140 @@ VALUES
 
 (2, 'time_off', 'Paid Leave Policy', 'Annual paid leaves including sick and casual leaves', true);
 
+CREATE TABLE IF NOT EXISTS messages (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  application_id INT NOT NULL,
+  sender_id INT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
+  FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_application_created (application_id, created_at)
+);
+
+CREATE TABLE employee_reviews (
+ id INT NOT NULL AUTO_INCREMENT,
+ company_id INT NOT NULL,
+ user_id INT NOT NULL,
+ overall_rating INT NOT NULL,
+ position VARCHAR(100) DEFAULT NULL,
+ employment_status ENUM('current', 'former') NOT NULL,
+ employment_length VARCHAR(50) DEFAULT NULL,
+ job_title VARCHAR(100) DEFAULT NULL,
+ location VARCHAR(100) DEFAULT NULL,
+ pros TEXT,
+ cons TEXT,
+ advice_to_management TEXT,
+ work_life_balance_rating INT DEFAULT 0,
+ culture_values_rating INT DEFAULT 0,
+ career_opportunities_rating INT DEFAULT 0,
+ compensation_benefits_rating INT DEFAULT 0,
+ senior_management_rating INT DEFAULT 0,
+ recommend_to_friend BOOLEAN DEFAULT NULL,
+ is_verified BOOLEAN DEFAULT FALSE,
+ is_approved BOOLEAN DEFAULT FALSE,
+ helpful_count INT DEFAULT 0,
+ not_helpful_count INT DEFAULT 0,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ PRIMARY KEY (id),
+ KEY company_id (company_id),
+ KEY user_id (user_id),
+ KEY is_approved (is_approved),
+ CONSTRAINT employee_reviews_ibfk_1
+   FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
+ CONSTRAINT employee_reviews_ibfk_2
+   FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+INSERT INTO users (clerk_id, email, role)
+VALUES
+('user_1', 'testuser@example.com', 'jobseeker');
+
+
+INSERT INTO employee_reviews
+(company_id, user_id, overall_rating, employment_status,
+employment_length, job_title, location, pros, cons,
+work_life_balance_rating, culture_values_rating,
+career_opportunities_rating, compensation_benefits_rating,
+senior_management_rating, recommend_to_friend, is_verified, is_approved)
+VALUES
+(1, 5, 5, 'current', '2 years', 'Software Engineer', 'USA',
+ 'Great work culture and learning opportunities',
+ 'Workload can be high sometimes',
+ 4, 5, 5, 4, 4, true, true, true),
+
+(2, 5, 4, 'former', '1-2 years', 'Developer', 'India',
+ 'Good training programs and team support',
+ 'Salary could be better',
+ 4, 4, 4, 3, 3, true, true, true),
+
+(3, 5, 3, 'current', '3+ years', 'System Engineer', 'India',
+ 'Stable job and good infrastructure',
+ 'Slow career growth',
+ 3, 3, 2, 3, 3, false, true, true);
+
+CREATE TABLE review_helpfulness (
+ id INT NOT NULL AUTO_INCREMENT,
+ review_id INT NOT NULL,
+ user_id INT NOT NULL,
+ is_helpful BOOLEAN NOT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY (id),
+ UNIQUE KEY unique_review_user (review_id, user_id),
+ FOREIGN KEY (review_id)
+   REFERENCES employee_reviews(id) ON DELETE CASCADE,
+ FOREIGN KEY (user_id)
+   REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE `company_values` (
+ id INT NOT NULL AUTO_INCREMENT,
+ company_id INT NOT NULL,
+ value_name VARCHAR(100) NOT NULL,
+ value_description TEXT,
+ display_order INT DEFAULT 0,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY (id),
+ KEY company_id (company_id),
+ CONSTRAINT company_values_ibfk_1
+   FOREIGN KEY (company_id)
+   REFERENCES companies (id)
+   ON DELETE CASCADE
+);
+
+
+INSERT INTO company_values
+(company_id, value_name, value_description, display_order)
+VALUES
+(1, 'Innovation', 'Encouraging creative thinking and new ideas', 1),
+(1, 'User Focus', 'Building products that improve user lives', 2),
+(1, 'Transparency', 'Open communication across teams', 3),
+
+(2, 'Integrity', 'Honest and ethical business practices', 1),
+(2, 'Client Value', 'Delivering measurable results to clients', 2),
+(2, 'Learning Culture', 'Continuous employee skill development', 3),
+
+(3, 'Stability', 'Long-term career opportunities', 1),
+(3, 'Process Excellence', 'Structured and efficient workflows', 2),
+(3, 'Teamwork', 'Collaborative working environment', 3);
+
+CREATE TABLE `saved_companies` (
+ `id` INT NOT NULL AUTO_INCREMENT,
+ `user_id` INT NOT NULL,
+ `company_id` INT NOT NULL,
+ `notes` TEXT,
+ `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY (`id`),
+ UNIQUE KEY `unique_saved_company` (`user_id`, `company_id`),
+ KEY `company_id` (`company_id`),
+ CONSTRAINT `saved_companies_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES
+`users` (`id`) ON DELETE CASCADE,
+ CONSTRAINT `saved_companies_ibfk_2` FOREIGN KEY (`company_id`)
+REFERENCES `companies` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
 
 ALTER TABLE messages
   ADD COLUMN attachment_original_name VARCHAR(255) NULL AFTER content,
