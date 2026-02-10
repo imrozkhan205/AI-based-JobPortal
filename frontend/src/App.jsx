@@ -34,6 +34,7 @@ import EmployerDashboard from './pages/EmployerDashboard.jsx';
 import EmployerApplicationPage from './pages/employer/EmployerApplicationPage.jsx';
 import AtsChecker from './pages/AtsChecker.jsx';
 import MessagesPage from './pages/MessagesPage.jsx';
+import EmployerAnalyticsPage from './pages/employer/EmployerAnalyticsPage.jsx';
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -79,8 +80,8 @@ export default function App() {
     { to: '/applications', icon: <UserCheck size={20} />, label: 'My Applications' },
     { to: '/companies', icon: <Building2 size={20} />, label: 'Companies' },
     { to: '/messages', icon: <MessageCircle size={20} />, label: 'Messages' },
-    { to: '/settings', icon: <Settings size={20} />, label: 'Settings' },
     { to: '/ats', icon: <File size={20} />, label: 'ATS Checker' },
+    { to: '/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
 
   const employerLinks = [
@@ -235,11 +236,7 @@ export default function App() {
             element={
               <SignedIn>
                 {userRole === 'employer' ? (
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
-                    <p className="text-gray-400">View your job posting performance and insights</p>
-                    {/* Analytics component would go here */}
-                  </div>
+                  <EmployerAnalyticsPage />
                 ) : (
                   <div className="p-6 text-center">
                     <h1 className="text-2xl font-bold text-red-400">Access Denied</h1>

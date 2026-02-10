@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { SidebarOpen, SidebarClose } from "lucide-react";
 import { useUser, UserButton } from "@clerk/clerk-react";
+import rocket from "../assets/rocket.png";
 
 const Sidebar = ({ collapsed, setCollapsed, links }) => {
   return (
@@ -11,9 +12,14 @@ const Sidebar = ({ collapsed, setCollapsed, links }) => {
     >
       <div className="flex flex-col h-full text-white">
         {/* Header and toggle */}
-        <div className="flex justify-between items-center mb-6">
+        <div className={`flex items-center mb-6 ${collapsed ? "justify-end" : "justify-between"}`}>
           {!collapsed && (
-            <h2 className="text-2xl pl-4 font-bold text-white">JobSpace</h2>
+            <div className="flex items-center gap-3">
+              <img src={rocket} alt="JobSpace" className="w-10 h-10" />
+              <h2 className="text-2xl font-bold text-white leading-none">
+                JobSpace
+              </h2>
+            </div>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
