@@ -14,7 +14,28 @@ class KeywordExtractor {
       'machine learning', 'data analysis', 'pandas', 'tensorflow', 'pytorch',
       'leadership', 'management', 'communication', 'teamwork', 'problem solving',
       'spring boot', 'django', 'flask', 'redis', 'elasticsearch', 'jenkins',
-      'terraform', 'ansible', 'microservices', 'api design', 'rest', 'oauth'
+      'terraform', 'ansible', 'microservices', 'api design', 'rest', 'oauth',
+      'c', 'c++', 'c#', '.net', 'dotnet', 'go', 'golang', 'rust', 'php', 'ruby',
+      'swift', 'kotlin', 'scala', 'objective-c', 'typescript', 'next.js', 'nuxt',
+      'svelte', 'sveltekit', 'redux', 'zustand', 'mobx', 'tailwind', 'bootstrap',
+      'material ui', 'chakra ui', 'jest', 'vitest', 'cypress', 'playwright',
+      'selenium', 'storybook', 'vite', 'babel', 'rollup', 'parcel',
+      'linux', 'bash', 'shell', 'powershell', 'gitlab', 'github', 'gitlab ci',
+      'github actions', 'bitbucket', 'jira', 'confluence', 'notion',
+      'aws lambda', 'ec2', 's3', 'rds', 'cloudfront', 'api gateway',
+      'gcp', 'google cloud', 'bigquery', 'firebase', 'cloud functions',
+      'azure devops', 'azure functions',
+      'kafka', 'rabbitmq', 'sqs', 'sns', 'redis', 'memcached',
+      'postgres', 'sql server', 'oracle', 'sqlite', 'dynamodb', 'cassandra',
+      'neo4j', 'graphql', 'rest', 'grpc', 'openapi', 'swagger',
+      'terraform', 'pulumi', 'cloudformation', 'helm', 'istio',
+      'prometheus', 'grafana', 'datadog', 'new relic', 'splunk',
+      'nginx', 'apache', 'docker compose', 'k8s', 'microservices',
+      'ai', 'nlp', 'computer vision', 'llm', 'bert', 'transformers',
+      'pytorch', 'tensorflow', 'keras', 'scikit-learn', 'numpy',
+      'pandas', 'airflow', 'spark', 'hadoop', 'dbt', 'snowflake',
+      'tableau', 'power bi', 'looker', 'etl', 'data warehouse',
+      'agile', 'scrum', 'kanban', 'leadership', 'mentoring'
     ];
   }
 
