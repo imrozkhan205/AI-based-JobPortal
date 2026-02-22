@@ -136,8 +136,8 @@ const ATSChecker = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Award className="w-12 h-12 text-blue-400 mr-3" />
-            <h1 className="text-4xl font-bold text-white">ATS Resume Checker</h1>
+            <Award className="w-8 h-8 text-blue-400 mr-3" />
+            <h1 className="text-3xl font-bold text-white">ATS Resume Checker</h1>
           </div>
           <p className="text-gray-300 text-lg">
             Analyze your resume's ATS compatibility and get actionable recommendations
@@ -151,7 +151,7 @@ const ATSChecker = () => {
                 Upload Resume (PDF or DOCX)
               </label>
               <div
-                className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
+                className={`border-2 border-dashed rounded-xl p-4 text-center transition-all ${
                   dragActive
                     ? 'border-blue-400 bg-blue-500/10'
                     : 'border-gray-700 hover:border-blue-400 bg-gray-900/40'
@@ -169,7 +169,7 @@ const ATSChecker = () => {
                   onChange={handleFileChange}
                 />
                 <label htmlFor="file-upload" className="cursor-pointer">
-                  <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <Upload className="w-10 h-10 text-gray-400 mx-auto mb-4" />
                   <p className="text-lg font-medium text-gray-100 mb-2">
                     {file ? file.name : 'Drag and drop your resume here'}
                   </p>
@@ -185,7 +185,7 @@ const ATSChecker = () => {
                 Job Description (Optional)
               </label>
               <textarea
-                className="w-full border-2 border-gray-700 bg-gray-900/60 rounded-xl p-4 text-gray-100 placeholder-gray-500 focus:border-blue-400 focus:outline-none transition-colors"
+                className="w-full h-40 border-2 border-gray-700 bg-gray-900/60 rounded-xl p-4 text-gray-100 placeholder-gray-500 focus:border-blue-400 focus:outline-none transition-colors"
                 rows="6"
                 placeholder="Paste the job description here to see how well your resume matches..."
                 value={jobDescription}

@@ -38,6 +38,14 @@ class RecommendationEngine {
           priority: 1
         });
       }
+      if (!sections.summary) {
+        recommendations.push({
+          type: 'info',
+          category: 'sections',
+          message: 'Add a short Summary or Objective to highlight your role and goals',
+          priority: 3
+        });
+      }
       if (!sections.education) {
         recommendations.push({
           type: 'warning',
@@ -52,6 +60,14 @@ class RecommendationEngine {
           category: 'sections',
           message: 'Add a Skills section highlighting your technical and soft skills',
           priority: 2
+        });
+      }
+      if (!sections.certifications) {
+        recommendations.push({
+          type: 'info',
+          category: 'sections',
+          message: 'Include Certifications if you have relevant credentials',
+          priority: 3
         });
       }
   
@@ -71,6 +87,24 @@ class RecommendationEngine {
           category: 'job_match',
           message: `Add these keywords from the job description: ${topMissing.join(', ')}`,
           priority: 1
+        });
+      }
+
+      if (analysisData.formatCheck.wordCount < 150) {
+        recommendations.push({
+          type: 'warning',
+          category: 'format',
+          message: 'Resume seems very short. Add more detail to improve ATS readability',
+          priority: 2
+        });
+      }
+
+      if (analysisData.formatCheck.wordCount > 1200) {
+        recommendations.push({
+          type: 'info',
+          category: 'format',
+          message: 'Resume is quite long. Consider trimming to the most relevant content',
+          priority: 3
         });
       }
   

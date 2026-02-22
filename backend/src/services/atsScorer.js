@@ -22,22 +22,22 @@ class ATSScorer {
         status: contactScore >= 10 ? 'good' : contactScore >= 5 ? 'warning' : 'critical' 
       };
   
-      // Sections Presence (25 points)
+      // Sections Presence (30 points)
       const sectionScore = this.scoreSections(sections);
       score += sectionScore;
       breakdown.sections = { 
         score: sectionScore, 
-        max: 25, 
-        status: sectionScore >= 20 ? 'good' : sectionScore >= 15 ? 'warning' : 'critical' 
+        max: 30, 
+        status: sectionScore >= 25 ? 'good' : sectionScore >= 15 ? 'warning' : 'critical' 
       };
   
-      // Keywords (25 points)
-      const keywordScore = Math.min(25, Math.floor(keywords.length * 1.5));
+      // Keywords (20 points)
+      const keywordScore = Math.min(30, Math.floor(keywords.length * 1.5));
       score += keywordScore;
       breakdown.keywords = { 
         score: keywordScore, 
-        max: 25, 
-        status: keywordScore >= 20 ? 'good' : keywordScore >= 12 ? 'warning' : 'critical' 
+        max: 20, 
+        status: keywordScore >= 15 ? 'good' : keywordScore >= 10 ? 'warning' : 'critical' 
       };
   
       // Job Match (15 points) - if job description provided

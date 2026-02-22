@@ -42,7 +42,7 @@ export default function Home() {
         </p>
 
         <Link to="/sign-up">
-          <button className="bg-white text-black text-opacity-80 px-6 py-3 rounded-2xl text-lg font-semibold shadow-lg hover:bg-gray-100">
+          <button className="bg-white border-gray-300 border-2 text-black text-opacity-80 px-6 py-3 rounded-2xl text-lg font-semibold shadow-lg hover:bg-gray-100">
             Get Started
           </button>
         </Link>
