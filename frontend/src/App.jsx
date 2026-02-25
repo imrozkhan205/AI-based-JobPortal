@@ -5,7 +5,7 @@ import {
   Home, Users, FileText, Settings,
   MessageCircle, Building2, LayoutDashboard as DashboardIcon,
   Briefcase, Plus, BarChart3, UserCheck,
-  File
+  File, Bot
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -34,6 +34,7 @@ import EmployerDashboard from './pages/EmployerDashboard.jsx';
 import EmployerApplicationPage from './pages/employer/EmployerApplicationPage.jsx';
 import AtsChecker from './pages/AtsChecker.jsx';
 import MessagesPage from './pages/MessagesPage.jsx';
+import ChatbotPage from './pages/jobseeker/ChatbotPage.jsx';
 import EmployerAnalyticsPage from './pages/employer/EmployerAnalyticsPage.jsx';
 
 export default function App() {
@@ -79,6 +80,7 @@ export default function App() {
     { to: '/jobs', icon: <FileText size={20} />, label: 'Browse Jobs' },
     { to: '/applications', icon: <UserCheck size={20} />, label: 'My Applications' },
     { to: '/companies', icon: <Building2 size={20} />, label: 'Companies' },
+    { to: '/chatbot', icon: <Bot size={20} />, label: 'Career Chatbot' },
     { to: '/messages', icon: <MessageCircle size={20} />, label: 'Messages' },
     { to: '/ats', icon: <File size={20} />, label: 'ATS Checker' },
     { to: '/settings', icon: <Settings size={20} />, label: 'Settings' },
@@ -188,6 +190,22 @@ export default function App() {
               <SignedIn>
                 {userRole === 'jobseeker' ? (
                   <CompaniesPage />
+                ) : (
+                  <div className="p-6 text-center">
+                    <h1 className="text-2xl font-bold text-red-400">Access Denied</h1>
+                    <p className="text-gray-400 mt-2">This page is for job seekers only</p>
+                  </div>
+                )}
+              </SignedIn>
+            }
+          />
+
+          <Route
+            path="/chatbot"
+            element={
+              <SignedIn>
+                {userRole === 'jobseeker' ? (
+                  <ChatbotPage />
                 ) : (
                   <div className="p-6 text-center">
                     <h1 className="text-2xl font-bold text-red-400">Access Denied</h1>
