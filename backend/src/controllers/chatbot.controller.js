@@ -171,7 +171,7 @@ async function generateAnswerWithOpenAI({ message, topicCategory, docText }) {
 const response = await axios.post(
   "https://api.groq.com/openai/v1/chat/completions",
   {
-    model: process.env.GROQ_MODEL || "llama-3.1-70b-versatile",
+    model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
     messages,
     temperature: 0.4,
     max_tokens: 600,

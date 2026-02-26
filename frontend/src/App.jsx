@@ -87,11 +87,10 @@ export default function App() {
   ];
 
   const employerLinks = [
-    { to: '/dashboard', icon: <DashboardIcon size={20} />, label: 'Dashboard' },
+    { to: '/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
     { to: '/create-job', icon: <Plus size={20} />, label: 'Post Job' },
     { to: '/my-jobs', icon: <Briefcase size={20} />, label: 'My Jobs' },
     { to: '/applications', icon: <Users size={20} />, label: 'Applications' },
-    { to: '/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
     { to: '/messages', icon: <MessageCircle size={20} />, label: 'Messages' },
     { to: '/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];

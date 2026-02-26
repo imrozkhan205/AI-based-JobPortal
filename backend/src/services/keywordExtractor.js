@@ -6,6 +6,7 @@ const natural = require('natural');
 class KeywordExtractor {
   constructor() {
     this.tfidf = new natural.TfIdf();
+    // total 171 common skills
     this.commonSkills = [
       'javascript', 'python', 'java', 'react', 'angular', 'vue', 'node.js',
       'express', 'mongodb', 'sql', 'postgresql', 'mysql', 'aws', 'azure',

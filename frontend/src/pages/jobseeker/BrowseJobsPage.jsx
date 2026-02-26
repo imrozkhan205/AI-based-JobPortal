@@ -50,8 +50,16 @@ const BrowseJobsPage = () => {
     { value: 'remote', label: 'Remote' }
   ];
 
+  const normalizeJobType = (value) =>
+    (value || '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[_\s]+/g, '-');
+
   const getJobTypeLabel = (value) => {
-    return jobTypes.find(type => type.value === value)?.label || value;
+    const normalized = normalizeJobType(value);
+    return jobTypes.find(type => type.value === normalized)?.label || value;
   };
 
   const currencies = {
@@ -175,7 +183,7 @@ const BrowseJobsPage = () => {
 
     // Type filter
     if (filterType !== 'all') {
-      filtered = filtered.filter(job => job.job_type === filterType);
+      filtered = filtered.filter(job => normalizeJobType(job.job_type) === filterType);
     }
 
     console.log(`🔍 Filtered ${filtered.length} jobs from ${jobs.length} total`);

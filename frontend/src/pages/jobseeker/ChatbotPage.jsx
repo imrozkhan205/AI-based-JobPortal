@@ -68,9 +68,11 @@ const ChatbotPage = () => {
   };
 
   const handleSend = async (e) => {
-    e.preventDefault();
+    if (e?.preventDefault) {
+      e.preventDefault();
+    }
     const trimmed = input.trim();
-    if (!trimmed) return;
+    if (!trimmed || isSending) return;
 
     setError("");
     setIsSending(true);
@@ -257,6 +259,12 @@ const ChatbotPage = () => {
               rows={1}
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
               placeholder="Type your question about aptitude, interview prep, top companies, or skill roadmap..."
               className="flex-1 resize-none rounded-xl bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-3 py-2 text-sm md:text-[0.95rem] text-white placeholder-gray-500 outline-none max-h-32"
             />
