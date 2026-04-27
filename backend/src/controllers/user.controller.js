@@ -7,14 +7,20 @@ export const getMe = async (req, res) => {
     console.log("🔍 DEBUG getMe - req.user:", req.user);
     
     const userId = req.user.sub; // Use req.user.sub from your custom middleware
-    const [rows] = await pool.query("SELECT id, email, role FROM users WHERE clerk_id = ?", [userId]);
+    const [rows] = await pool.query(
+      "SELECT id, email, role, employer_verified FROM users WHERE clerk_id = ?",
+      [userId]
+    );
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "User not found" });
     }
 
     console.log("✅ User found:", rows[0]);
-    res.json(rows[0]);
+    res.json({
+      ...rows[0],
+      employer_verified: Boolean(rows[0].employer_verified),
+    });
   } catch (err) {
     console.error("❌ getMe error:", err);
     res.status(500).json({ message: "Internal server error" });
@@ -47,7 +53,7 @@ export const updateRole = async (req, res) => {
 
     // First check if user exists
     const [userCheck] = await pool.query(
-      "SELECT id, role FROM users WHERE clerk_id = ?",
+      "SELECT id, role, employer_verified FROM users WHERE clerk_id = ?",
       [clerkId]
     );
 
@@ -57,6 +63,14 @@ export const updateRole = async (req, res) => {
     }
 
     console.log("🔍 DEBUG - Current user role:", userCheck[0].role);
+
+    if (role === "employer" && !userCheck[0].employer_verified) {
+      return res.status(403).json({
+        message:
+          "Employer verification required. Submit your employer details and wait for approval before switching.",
+        code: "EMPLOYER_NOT_VERIFIED",
+      });
+    }
 
     const [result] = await pool.query(
       "UPDATE users SET role = ? WHERE clerk_id = ?",

@@ -39,6 +39,14 @@ export async function ensureUserInDB(req, res, next) {
       console.log(`✅ Inserted new user: ${email} with clerk_id: ${clerkId}`);
     } else {
       console.log(`✅ User already exists: ${clerkId}`);
+
+      // Backfill missing email for older rows
+      if (email) {
+        await pool.query(
+          `UPDATE users SET email = COALESCE(NULLIF(email, ''), ?) WHERE clerk_id = ?`,
+          [email, clerkId]
+        );
+      }
     }
 
     next();

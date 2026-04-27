@@ -29,3 +29,13 @@ desktop.ini
 # Logs
 *.log
 logs/
+
+# Node / Vite
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Environment secrets
+backend/.env
+frontend/.env
+frontend/.env.*

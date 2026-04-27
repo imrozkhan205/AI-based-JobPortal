@@ -14,6 +14,7 @@ import { clerkAuthMiddleware } from './middleware/authMiddleware.js';
 import atsCheckerRoutes from './routes/atsChecker.js';
 import companyRoutes from './routes/company.route.js';
 import reviewRoutes from "./routes/review.routes.js";
+import employerVerificationRoutes from "./routes/employerVerification.route.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -64,6 +65,7 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/employer-verification", employerVerificationRoutes);
 
 
 app.listen(PORT, () => {

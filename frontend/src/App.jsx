@@ -1,5 +1,5 @@
 import CompaniesPage from './pages/jobseeker/CompaniesPage.jsx';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { SignedIn, useUser, useAuth } from '@clerk/clerk-react';
 import {
   Home, Users, FileText, Settings,
@@ -36,6 +36,7 @@ import AtsChecker from './pages/AtsChecker.jsx';
 import MessagesPage from './pages/MessagesPage.jsx';
 import ChatbotPage from './pages/jobseeker/ChatbotPage.jsx';
 import EmployerAnalyticsPage from './pages/employer/EmployerAnalyticsPage.jsx';
+import EmployerVerificationsPage from './pages/team/EmployerVerificationsPage.jsx';
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -135,7 +136,7 @@ export default function App() {
                     <span className="ml-3">Loading dashboard...</span>
                   </div>
                 ) : userRole === 'employer' ? (
-                  <EmployerDashboard />
+                  <Navigate to="/analytics" replace />
                 ) : (
                   <JobseekerDashboard />
                 )}
@@ -282,6 +283,16 @@ export default function App() {
             element={
               <SignedIn>
                 <AtsChecker />
+              </SignedIn>
+            }
+          />
+
+          {/* Team routes (not shown in sidebar) */}
+          <Route
+            path="/team/employer-verifications"
+            element={
+              <SignedIn>
+                <EmployerVerificationsPage />
               </SignedIn>
             }
           />
