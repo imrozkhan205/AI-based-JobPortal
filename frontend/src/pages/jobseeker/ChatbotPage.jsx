@@ -18,8 +18,8 @@ const allowedFileTypes = [
 ];
 
 const ChatbotPage = () => {
-  const { getToken } = useAuth();
-  const [messages, setMessages] = useState([
+  const { getToken, userId, isLoaded } = useAuth();
+  const initialMessages = [
     {
       role: "bot",
       text:
@@ -32,18 +32,79 @@ const ChatbotPage = () => {
         "You can also upload a resume or job description, and then ask questions like:\n" +
         "“What skills am I missing for data analyst roles?” or “How should I prepare for interviews for these companies?”",
     },
-  ]);
+  ];
+  const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [file, setFile] = useState(null);
   const [error, setError] = useState("");
   const messagesEndRef = useRef(null);
+  const loadedFromStorageRef = useRef(false);
+
+  const storageKey = `career_chatbot_history:${userId || "guest"}`;
+
+  useEffect(() => {
+    if (!isLoaded || loadedFromStorageRef.current) return;
+
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) {
+        loadedFromStorageRef.current = true;
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        loadedFromStorageRef.current = true;
+        return;
+      }
+
+      const sanitized = parsed
+        .filter(
+          (m) =>
+            m &&
+            (m.role === "user" || m.role === "bot") &&
+            typeof m.text === "string"
+        )
+        .map((m) => ({
+          role: m.role,
+          text: m.text,
+          ...(typeof m.fileName === "string" ? { fileName: m.fileName } : {}),
+        }));
+
+      setMessages(sanitized.length ? sanitized : initialMessages);
+    } catch {
+      setMessages(initialMessages);
+    } finally {
+      loadedFromStorageRef.current = true;
+    }
+  }, [isLoaded, storageKey]);
+
+  useEffect(() => {
+    if (!loadedFromStorageRef.current) return;
+
+    try {
+      const toSave = messages.slice(-200); // prevent unbounded localStorage growth
+      localStorage.setItem(storageKey, JSON.stringify(toSave));
+    } catch {
+      // ignore storage failures (private mode, quota exceeded, etc.)
+    }
+  }, [messages, storageKey]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  const handleClearChat = () => {
+    setMessages(initialMessages);
+    try {
+      localStorage.removeItem(storageKey);
+    } catch {
+      // ignore
+    }
+  };
 
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
@@ -156,6 +217,13 @@ const ChatbotPage = () => {
               </p>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={handleClearChat}
+            className="text-xs md:text-sm px-3 py-2 rounded-xl bg-gray-900/70 border border-gray-700 hover:border-indigo-500 hover:bg-gray-900 text-gray-200 transition-colors"
+          >
+            Clear chat
+          </button>
         </div>
 
         {/* Info banner */}
