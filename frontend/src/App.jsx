@@ -80,7 +80,7 @@ export default function App() {
     { to: '/dashboard', icon: <DashboardIcon size={20} />, label: 'Dashboard' },
     { to: '/jobs', icon: <FileText size={20} />, label: 'Browse Jobs' },
     { to: '/applications', icon: <UserCheck size={20} />, label: 'My Applications' },
-    { to: '/companies', icon: <Building2 size={20} />, label: 'Companies' },
+    // { to: '/companies', icon: <Building2 size={20} />, label: 'Companies' },
     { to: '/chatbot', icon: <Bot size={20} />, label: 'Career Chatbot' },
     { to: '/messages', icon: <MessageCircle size={20} />, label: 'Messages' },
     { to: '/ats', icon: <File size={20} />, label: 'ATS Checker' },
@@ -184,7 +184,7 @@ export default function App() {
               </SignedIn>
             }
           />
-          <Route
+          {/* <Route
             path="/companies"
             element={
               <SignedIn>
@@ -198,7 +198,7 @@ export default function App() {
                 )}
               </SignedIn>
             }
-          />
+          /> */}
 
           <Route
             path="/chatbot"

@@ -152,6 +152,36 @@ const EmployerApplicationsPage = () => {
     }));
   };
 
+  const viewResumeInline = async (applicationId) => {
+    try {
+      const token = await getToken({ template: "default" });
+      if (!token) {
+        alert("Not signed in. Please sign in again.");
+        return;
+      }
+
+      const res = await axios.get(
+        `http://localhost:5000/api/applications/${applicationId}/resume`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob",
+        }
+      );
+
+      const blobUrl = URL.createObjectURL(res.data);
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    } catch (err) {
+      console.error("Error opening resume:", err);
+      const msg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        "Failed to open resume";
+      alert(msg);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const badges = {
       pending: { 
@@ -450,15 +480,14 @@ const EmployerApplicationsPage = () => {
                                   <span className="text-sm font-medium text-gray-300">Resume Attachment</span>
                                 </div>
                                 <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
-                                  <a
-                                    href={application.resume_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                  <button
+                                    type="button"
+                                    onClick={() => viewResumeInline(application.id)}
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm font-medium"
                                   >
                                     <FileText size={16} />
-                                    View Resume in Cloudinary
-                                  </a>
+                                    View Resume
+                                  </button>
                                   <p className="text-xs text-gray-400 mt-2">
                                     Opens the resume in a new tab for viewing
                                   </p>

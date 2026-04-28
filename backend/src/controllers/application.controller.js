@@ -1,6 +1,8 @@
 // backend/src/controllers/application.controller.js
 import pool from "../database/db.js";
 import { v2 as cloudinary } from 'cloudinary';
+import path from "path";
+import axios from "axios";
 
 // Apply for a job
 export const applyForJob = async (req, res) => {
@@ -423,9 +425,9 @@ let cloudinaryConfigured = false;
 
 const configureCloudinary = () => {
     if (!cloudinaryConfigured) {
-        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-        const apiKey = process.env.CLOUDINARY_API_KEY;
-        const apiSecret = process.env.CLOUDINARY_API_SECRET;
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+        const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
+        const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
 
         if (!cloudName || !apiKey || !apiSecret) {
             throw new Error('Cloudinary credentials are missing. Please check your .env file.');
@@ -437,7 +439,7 @@ const configureCloudinary = () => {
             api_secret: apiSecret
         });
         cloudinaryConfigured = true;
-        console.log("✅ Cloudinary configured successfully");
+        console.log("✅ Cloudinary configured successfully for:", cloudName);
     }
 };
 
@@ -482,6 +484,18 @@ export const uploadResume = async (req, res) => {
             size: req.file.size
         });
 
+        const ext = path.extname(req.file.originalname || "").toLowerCase();
+        const format = ext.startsWith(".") ? ext.slice(1) : "";
+        const allowedFormats = new Set(["pdf", "doc", "docx"]);
+        const uploadFormat = allowedFormats.has(format) ? format : undefined;
+
+        // Cloudinary previews PDFs best when uploaded as resource_type "image"
+        // (doc/docx should remain "raw")
+        const resourceType =
+            uploadFormat === "pdf" || req.file.mimetype === "application/pdf"
+                ? "image"
+                : "raw";
+
         // Generate unique public_id (without folder, as folder option handles it)
         const publicId = `application-resume-${Date.now()}-${Math.round(Math.random() * 1E9)}`;
 
@@ -490,11 +504,16 @@ export const uploadResume = async (req, res) => {
         const result = await new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
                 {
-                    resource_type: 'raw', // Use 'raw' for PDFs and documents
+                    resource_type: resourceType,
                     folder: 'resumes', // Organize files in a folder
                     public_id: publicId,
                     use_filename: false,
                     overwrite: false
+                    ,
+                    // Ensure the delivered URL includes a useful extension (helps browser preview/opening)
+                    ...(uploadFormat ? { format: uploadFormat } : {}),
+                    // Hint the correct content-type when serving the file
+                    ...(req.file.mimetype ? { content_type: req.file.mimetype } : {})
                 },
                 (error, result) => {
                     if (error) {
@@ -528,7 +547,18 @@ export const uploadResume = async (req, res) => {
             message: "Resume uploaded successfully",
             resumeUrl: result.secure_url, // Cloudinary secure URL
             publicId: result.public_id,
-            filename: req.file.originalname
+            filename: req.file.originalname,
+            format: uploadFormat || null,
+            cloudinary: {
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME?.trim() || null,
+                public_id: result.public_id,
+                asset_id: result.asset_id,
+                resource_type: result.resource_type,
+                bytes: result.bytes,
+                format: result.format,
+                original_filename: result.original_filename,
+                folder: result.folder
+            }
         });
 
     } catch (error) {
@@ -543,5 +573,76 @@ export const uploadResume = async (req, res) => {
             message: "Failed to upload resume to cloud storage",
             error: error.message || "Unknown error occurred"
         });
+    }
+};
+
+function guessResumeExtension(url, contentType) {
+    const u = String(url || "");
+    if (u.toLowerCase().includes(".pdf")) return ".pdf";
+    if (u.toLowerCase().includes(".docx")) return ".docx";
+    if (u.toLowerCase().includes(".doc")) return ".doc";
+
+    const ct = String(contentType || "").toLowerCase();
+    if (ct.includes("pdf")) return ".pdf";
+    if (ct.includes("wordprocessingml.document")) return ".docx";
+    if (ct.includes("msword")) return ".doc";
+    return "";
+}
+
+// Stream the application's resume inline (prevents "forced download" behavior in some browsers/CDNs)
+export const viewApplicationResume = async (req, res) => {
+    try {
+        const applicationId = Number(req.params.applicationId);
+        if (!Number.isFinite(applicationId)) {
+            return res.status(400).json({ message: "Invalid applicationId" });
+        }
+
+        const clerkId = req.user?.sub;
+        const [userRows] = await pool.query("SELECT id FROM users WHERE clerk_id = ?", [clerkId]);
+        if (userRows.length === 0) return res.status(404).json({ message: "User not found" });
+        const requesterUserId = userRows[0].id;
+
+        const [rows] = await pool.query(
+            `SELECT a.resume_url, a.user_id AS applicant_user_id, j.posted_by AS employer_user_id
+             FROM applications a
+             JOIN jobs j ON j.id = a.job_id
+             WHERE a.id = ?`,
+            [applicationId]
+        );
+
+        if (rows.length === 0) return res.status(404).json({ message: "Application not found" });
+
+        const { resume_url: resumeUrl, applicant_user_id: applicantUserId, employer_user_id: employerUserId } = rows[0];
+        if (!resumeUrl) return res.status(404).json({ message: "No resume attached" });
+
+        // Only the applicant or the employer who posted the job can view the resume
+        if (requesterUserId !== applicantUserId && requesterUserId !== employerUserId) {
+            return res.status(403).json({ message: "You cannot access this resume" });
+        }
+
+        const upstream = await axios.get(resumeUrl, {
+            responseType: "stream",
+            timeout: 30000,
+            maxBodyLength: Infinity,
+            maxContentLength: Infinity,
+            validateStatus: (s) => s >= 200 && s < 400,
+        });
+
+        const contentType = upstream.headers?.["content-type"] || "application/octet-stream";
+        const ext = guessResumeExtension(resumeUrl, contentType);
+
+        res.setHeader("Content-Type", contentType);
+        res.setHeader("Content-Disposition", `inline; filename="resume${ext}"`);
+        res.setHeader("Cache-Control", "no-store");
+
+        upstream.data.on("error", (err) => {
+            console.error("❌ Resume upstream stream error:", err);
+            res.destroy(err);
+        });
+
+        upstream.data.pipe(res);
+    } catch (error) {
+        console.error("❌ Error streaming resume:", error?.message || error);
+        res.status(500).json({ message: "Failed to load resume" });
     }
 };

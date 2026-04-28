@@ -6,7 +6,8 @@ import {
     getJobApplications, 
     updateApplicationStatus,
     checkApplicationStatus,
-    uploadResume
+    uploadResume,
+    viewApplicationResume
 } from "../controllers/application.controller.js";
 import { clerkAuthMiddleware } from "../middleware/authMiddleware.js";
 import { ensureUserInDB } from "../middleware/ensureUser.js";
@@ -99,6 +100,14 @@ router.patch(
     clerkAuthMiddleware, 
     ensureUserInDB, 
     updateApplicationStatus
+);
+
+// 7. View/preview application resume inline
+router.get(
+    "/:applicationId/resume",
+    clerkAuthMiddleware,
+    ensureUserInDB,
+    viewApplicationResume
 );
 
 export default router;
