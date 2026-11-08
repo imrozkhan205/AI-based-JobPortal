@@ -32,7 +32,7 @@ class ATSScorer {
       };
   
       // Keywords (20 points)
-      const keywordScore = Math.min(30, Math.floor(keywords.length * 1.5));
+      const keywordScore = Math.min(20, Math.floor(keywords.length * 1.5));
       score += keywordScore;
       breakdown.keywords = { 
         score: keywordScore, 

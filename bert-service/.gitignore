@@ -22,10 +22,13 @@ wheels/
 
 # Virtual Environment
 venv/
+venb/
 venv/pyvenv.cfg
+venb/pyvenv.cfg
 env/
 ENV/
 .venv
+.venv/
 Lib/
 Scripts/
 share/

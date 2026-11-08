@@ -30,12 +30,35 @@ desktop.ini
 *.log
 logs/
 
-# Node / Vite
+# Node / Vite / Dependencies
 node_modules/
+**/node_modules/
 frontend/dist/
 frontend/.vite/
 
+# Python Virtual Environments & Caches
+venv/
+**/venv/
+venb/
+**/venb/
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# User Uploads
+backend/uploads/
+uploads/
+**/uploads/
+
 # Environment secrets
+.env
+.env.*
+.env.local
+*.env
+*.env.*
 backend/.env
+backend/.env.*
 frontend/.env
 frontend/.env.*

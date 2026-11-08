@@ -289,13 +289,13 @@ const MyJobsPage = () => {
                   >
                     <Eye size={18} />
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => window.location.href = `/edit-job/${job.id}`}
                     className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors"
                     title="Edit Job"
                   >
                     <Edit size={18} />
-                  </button>
+                  </button> */}
                   <button
                     onClick={() => confirmDelete(job)}
                     className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"

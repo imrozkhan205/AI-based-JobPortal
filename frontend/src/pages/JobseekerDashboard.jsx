@@ -249,14 +249,14 @@ const JobseekerDashboard = () => {
       border: "border-red-500/30",
       bg: "bg-red-500/10",
     },
-    {
-      label: "Open Jobs",
-      value: jobsTotal,
-      icon: Briefcase,
-      accent: "text-cyan-300",
-      border: "border-cyan-500/30",
-      bg: "bg-cyan-500/10",
-    },
+    // {
+    //   label: "Open Jobs",
+    //   value: jobsTotal,
+    //   icon: Briefcase,
+    //   accent: "text-cyan-300",
+    //   border: "border-cyan-500/30",
+    //   bg: "bg-cyan-500/10",
+    // },
   ];
 
   return (
