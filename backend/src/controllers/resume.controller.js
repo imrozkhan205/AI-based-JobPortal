@@ -25,61 +25,68 @@ export const analyzeResume = async (req, res) => {
         console.log('📄 Analyzing resume:', req.file.originalname);
         console.log('👤 User:', req.user.sub); // Clerk user ID
 
-        // Step 1: Extract text from resume using Python BERT service
-        const formData = new FormData();
-        formData.append('resume', req.file.buffer, {
-            filename: req.file.originalname,
-            contentType: req.file.mimetype,
-        });
-
+        // Step 1: Extract text from resume using Python BERT service (with automatic wake-up retry)
         let resumeText;
-        try {
-            console.log('🔄 Sending resume to BERT service for extraction...');
+        const maxRetries = 3;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`🔄 Sending resume to BERT service (attempt ${attempt}/${maxRetries})...`);
 
-            const extractResponse = await axios.post(
-                `${BERT_SERVICE_URL}/extract-resume`,
-                formData,
-                {
-                    headers: {
-                        ...formData.getHeaders(),
-                    },
-                    timeout: 90000, // 90s timeout to allow Render free tier to wake up
-                    maxBodyLength: Infinity,
-                    maxContentLength: Infinity,
+                const formData = new FormData();
+                formData.append('resume', req.file.buffer, {
+                    filename: req.file.originalname,
+                    contentType: req.file.mimetype,
+                });
+
+                const extractResponse = await axios.post(
+                    `${BERT_SERVICE_URL}/extract-resume`,
+                    formData,
+                    {
+                        headers: {
+                            ...formData.getHeaders(),
+                        },
+                        timeout: 90000,
+                        maxBodyLength: Infinity,
+                        maxContentLength: Infinity,
+                    }
+                );
+
+                if (!extractResponse.data.success) {
+                    throw new Error('Failed to extract resume text');
                 }
-            );
 
-            if (!extractResponse.data.success) {
-                throw new Error('Failed to extract resume text');
-            }
+                resumeText = extractResponse.data.resumeText;
+                console.log(`✅ Extracted ${resumeText.length} characters from resume`);
+                break;
 
-            resumeText = extractResponse.data.resumeText;
-            console.log(`✅ Extracted ${resumeText.length} characters from resume`);
+            } catch (error) {
+                const status = error.response?.status;
+                const isGatewayColdStart = status === 502 || status === 503 || status === 504 || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT';
 
-        } catch (error) {
-            const isHtml = typeof error.response?.data === 'string' && error.response.data.includes('<html');
-            const errorDetails = isHtml ? `[Render Gateway Status ${error.response?.status}]` : (error.response?.data || error.message);
-            console.error('❌ Error extracting resume:', error.message, errorDetails);
+                if (isGatewayColdStart && attempt < maxRetries) {
+                    console.log(`⏳ BERT service is spinning up (status: ${status || error.code}). Waiting 8s for wake-up before retry...`);
+                    await new Promise(resolve => setTimeout(resolve, 8000));
+                    continue;
+                }
 
-            if (
-                error.code === 'ECONNREFUSED' ||
-                error.code === 'ETIMEDOUT' ||
-                error.response?.status === 502 ||
-                error.response?.status === 503 ||
-                error.response?.status === 504
-            ) {
-                return res.status(503).json({
+                const isHtml = typeof error.response?.data === 'string' && error.response.data.includes('<html');
+                const errorDetails = isHtml ? `[Render Gateway Status ${status}]` : (error.response?.data || error.message);
+                console.error('❌ Error extracting resume:', error.message, errorDetails);
+
+                if (isGatewayColdStart) {
+                    return res.status(503).json({
+                        success: false,
+                        message: 'BERT AI service is currently waking up from standby. Please try again in 10-15 seconds.',
+                        error: error.message
+                    });
+                }
+
+                return res.status(500).json({
                     success: false,
-                    message: 'BERT AI service is currently waking up from standby. Please try again in 15-20 seconds.',
-                    error: error.message
+                    message: 'Failed to extract text from resume',
+                    error: isHtml ? 'AI extraction service temporary gateway error' : (error.response?.data?.error || error.message)
                 });
             }
-
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to extract text from resume',
-                error: isHtml ? 'AI extraction service temporary gateway error' : (error.response?.data?.error || error.message)
-            });
         }
 
         // Step 2: Fetch all active jobs from database (MySQL)
@@ -115,79 +122,85 @@ export const analyzeResume = async (req, res) => {
             });
         }
 
-        // Step 3: Use BERT to match resume with jobs
-        try {
-            console.log('🤖 Sending to BERT for job matching...');
+        // Step 3: Use BERT to match resume with jobs (with wake-up retry)
+        let matchedJobs = [];
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`🤖 Sending to BERT for job matching (attempt ${attempt}/${maxRetries})...`);
 
-            const matchResponse = await axios.post(
-                `${BERT_SERVICE_URL}/match-jobs`,
-                {
-                    resumeText: resumeText,
-                    // Map MySQL column names to BERT service expected fields (id is essential)
-                    jobs: jobs.map(job => ({
-                        id: job.id.toString(), // MySQL 'id' column
-                        title: job.title,
-                        company: job.company,
-                        description: job.description,
-                        requirements: job.requirements || '',
-                        location: job.location,
-                        salary_range: job.salary_range,
-                        job_type: job.job_type,
-                        benefits: job.benefits,
-                        created_at: job.created_at,
-                        posted_by: job.posted_by
-                    }))
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
+                const matchResponse = await axios.post(
+                    `${BERT_SERVICE_URL}/match-jobs`,
+                    {
+                        resumeText: resumeText,
+                        jobs: jobs.map(job => ({
+                            id: job.id.toString(),
+                            title: job.title,
+                            company: job.company,
+                            description: job.description,
+                            requirements: job.requirements || '',
+                            location: job.location,
+                            salary_range: job.salary_range,
+                            job_type: job.job_type,
+                            benefits: job.benefits,
+                            created_at: job.created_at,
+                            posted_by: job.posted_by
+                        }))
                     },
-                    timeout: 90000, // 90 second timeout for matching
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 90000,
+                    }
+                );
+
+                if (!matchResponse.data.success) {
+                    throw new Error('Failed to match jobs with resume');
                 }
-            );
 
-            if (!matchResponse.data.success) {
-                throw new Error('Failed to match jobs with resume');
-            }
+                matchedJobs = matchResponse.data.matchedJobs;
+                console.log(`✅ Successfully matched ${matchedJobs.length} jobs`);
+                break;
 
-            const matchedJobs = matchResponse.data.matchedJobs;
-            console.log(`✅ Successfully matched ${matchedJobs.length} jobs`);
+            } catch (error) {
+                const status = error.response?.status;
+                const isGatewayColdStart = status === 502 || status === 503 || status === 504 || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT';
 
-            // Step 4: Return results to frontend
-            return res.status(200).json({
-                success: true,
-                resumeText: resumeText.substring(0, 500), // First 500 chars for preview
-                matchedJobs: matchedJobs,
-                totalJobs: jobs.length,
-                analyzedAt: new Date().toISOString(),
-                userId: req.user.sub
-            });
+                if (isGatewayColdStart && attempt < maxRetries) {
+                    console.log(`⏳ BERT service is busy/waking up (status: ${status || error.code}). Waiting 5s before retry...`);
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    continue;
+                }
 
-        } catch (error) {
-            const isHtml = typeof error.response?.data === 'string' && error.response.data.includes('<html');
-            const errorDetails = isHtml ? `[Render Gateway Status ${error.response?.status}]` : (error.response?.data || error.message);
-            console.error('❌ Error matching jobs:', error.message, errorDetails);
+                const isHtml = typeof error.response?.data === 'string' && error.response.data.includes('<html');
+                const errorDetails = isHtml ? `[Render Gateway Status ${status}]` : (error.response?.data || error.message);
+                console.error('❌ Error matching jobs:', error.message, errorDetails);
 
-            if (
-                error.code === 'ECONNREFUSED' ||
-                error.code === 'ETIMEDOUT' ||
-                error.response?.status === 502 ||
-                error.response?.status === 503 ||
-                error.response?.status === 504
-            ) {
-                return res.status(503).json({
+                if (isGatewayColdStart) {
+                    return res.status(503).json({
+                        success: false,
+                        message: 'BERT AI service is currently warming up. Please try again in 10 seconds.',
+                        error: error.message
+                    });
+                }
+
+                return res.status(500).json({
                     success: false,
-                    message: 'BERT AI service is currently warming up. Please try again in 15 seconds.',
-                    error: error.message
+                    message: 'Failed to match jobs with resume',
+                    error: isHtml ? 'AI matching service temporary gateway error' : (error.response?.data?.error || error.message)
                 });
             }
-
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to match jobs with resume',
-                error: isHtml ? 'AI matching service temporary gateway error' : (error.response?.data?.error || error.message)
-            });
         }
+
+        // Step 4: Return results to frontend
+        return res.status(200).json({
+            success: true,
+            resumeText: resumeText.substring(0, 500), // First 500 chars for preview
+            matchedJobs: matchedJobs,
+            totalJobs: jobs.length,
+            analyzedAt: new Date().toISOString(),
+            userId: req.user.sub
+        });
 
     } catch (error) {
         console.error('❌ Error in analyze endpoint:', error);
