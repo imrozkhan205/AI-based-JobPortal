@@ -17,9 +17,13 @@ function requireEnv(name) {
 // This prevents confusing runtime errors like: Access denied for user ''@'localhost'
 const DB_HOST = requireEnv('DB_HOST');
 const DB_USER = requireEnv('DB_USER');
-// DB_PASS can be empty string for local dev (e.g., XAMPP root with no password)
-const DB_PASS = process.env.DB_PASS ?? '';
+// DB_PASS can be set via DB_PASS or DB_PASSWORD
+const DB_PASS = process.env.DB_PASS || process.env.DB_PASSWORD || '';
 const DB_NAME = requireEnv('DB_NAME');
+
+if (DB_HOST.includes('tidbcloud.com') && !DB_PASS) {
+  console.warn('⚠️ [DB CONFIG] DB_PASS / DB_PASSWORD is empty for TiDB Cloud! Please set DB_PASS in your environment variables.');
+}
 
 // TiDB Cloud Serverless uses port 4000 by default and requires SSL (TLSv1.2+)
 const isTiDB = DB_HOST.includes('tidbcloud.com');
