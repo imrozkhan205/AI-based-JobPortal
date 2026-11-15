@@ -47,10 +47,13 @@ app.use(
       if (
         allowedOrigins.includes(normalizedOrigin) ||
         process.env.NODE_ENV !== 'production' ||
-        normalizedOrigin.endsWith('.vercel.app')
+        normalizedOrigin.endsWith('.vercel.app') ||
+        normalizedOrigin.endsWith('.imrozkhan.space') ||
+        normalizedOrigin === 'https://imrozkhan.space'
       ) {
         return callback(null, true);
       }
+      console.warn(`⚠️ CORS blocked for origin: ${origin}`);
       return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
