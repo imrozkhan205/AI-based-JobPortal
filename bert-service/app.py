@@ -1,9 +1,10 @@
-# Python BERT Microservice (app.py)
-# Run this separately on port 5001
+# Python BERT / FastEmbed Microservice (app.py)
+# Lightweight ONNX Runtime (< 100MB RAM, optimized for low-memory cloud hosts)
 
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 from sklearn.metrics.pairwise import cosine_similarity
 import PyPDF2
 import docx
@@ -13,10 +14,10 @@ import numpy as np
 app = Flask(__name__)
 CORS(app)
 
-# Initialize BERT model (load once on startup)
-print("Loading BERT model...")
-model = SentenceTransformer('all-MiniLM-L6-v2')
-print("BERT model loaded successfully!")
+# Initialize lightweight embedding model (uses ONNX, < 100MB RAM)
+print("Loading FastEmbed model (sentence-transformers/all-MiniLM-L6-v2)...")
+model = TextEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
+print("FastEmbed model loaded successfully!")
 
 class ResumeParser:
     @staticmethod
@@ -26,7 +27,7 @@ class ResumeParser:
             pdf_reader = PyPDF2.PdfReader(pdf_file)
             text = ""
             for page in pdf_reader.pages:
-                text += page.extract_text() + "\n"
+                text += (page.extract_text() or "") + "\n"
             return text.strip()
         except Exception as e:
             raise Exception(f"Error extracting PDF: {str(e)}")
@@ -53,8 +54,8 @@ class ResumeParser:
             raise Exception("Unsupported file format")
 
 def calculate_similarity(text1, text2):
-    """Calculate semantic similarity between two texts using BERT"""
-    embeddings = model.encode([text1, text2])
+    """Calculate semantic similarity between two texts using FastEmbed"""
+    embeddings = list(model.embed([text1, text2]))
     similarity = cosine_similarity(
         embeddings[0].reshape(1, -1),
         embeddings[1].reshape(1, -1)
@@ -64,7 +65,11 @@ def calculate_similarity(text1, text2):
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    return jsonify({'status': 'healthy', 'model': 'all-MiniLM-L6-v2'}), 200
+    return jsonify({
+        'status': 'healthy',
+        'model': 'all-MiniLM-L6-v2',
+        'engine': 'fastembed-onnx'
+    }), 200
 
 @app.route('/extract-resume', methods=['POST'])
 def extract_resume():
@@ -99,7 +104,7 @@ def extract_resume():
 @app.route('/match-jobs', methods=['POST'])
 def match_jobs():
     """
-    Match resume text with job descriptions using BERT
+    Match resume text with job descriptions using FastEmbed
     
     Expected JSON body:
     {
@@ -131,7 +136,7 @@ def match_jobs():
             return jsonify({'error': 'No jobs provided'}), 400
         
         # Get resume embedding once
-        resume_embedding = model.encode(resume_text)
+        resume_embedding = np.array(list(model.embed([resume_text]))[0])
         
         # Prepare job texts and get embeddings in batch
         job_texts = []
@@ -141,8 +146,8 @@ def match_jobs():
                 job_text += f" {job['requirements']}"
             job_texts.append(job_text)
         
-        # Batch encode all job descriptions (much faster)
-        job_embeddings = model.encode(job_texts)
+        # Batch encode all job descriptions
+        job_embeddings = np.array(list(model.embed(job_texts)))
         
         # Calculate similarities
         similarities = cosine_similarity(
@@ -156,7 +161,7 @@ def match_jobs():
             job_with_score = {**job, 'matchScore': float(similarities[i]) * 100}
             matched_jobs.append(job_with_score)
         
-        # Filter jobs with match score >= 70%
+        # Filter jobs with match score >= threshold
         MIN_MATCH_THRESHOLD = 40.0
         high_match_jobs = [job for job in matched_jobs if job['matchScore'] >= MIN_MATCH_THRESHOLD]
         
@@ -179,12 +184,6 @@ def match_jobs():
 def calculate_text_similarity():
     """
     Calculate similarity between two texts
-    
-    Expected JSON body:
-    {
-        "text1": "...",
-        "text2": "..."
-    }
     """
     try:
         data = request.json
@@ -206,11 +205,10 @@ def calculate_text_similarity():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    import os
     default_port = 7860 if os.environ.get("SPACE_ID") else 5001
     port = int(os.environ.get("PORT", default_port))
     debug = os.environ.get("FLASK_ENV") == "development"
     print("\n" + "="*50)
-    print(f"🤖 BERT Microservice Starting on port {port}...")
+    print(f"🤖 FastEmbed Microservice Starting on port {port}...")
     print("="*50 + "\n")
     app.run(host='0.0.0.0', port=port, debug=debug)
