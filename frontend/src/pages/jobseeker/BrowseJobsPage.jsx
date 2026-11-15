@@ -137,7 +137,7 @@ const BrowseJobsPage = () => {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
           },
-          timeout: 60000
+          timeout: 120000 // 120s to allow Render free tier cold-start wake up
         }
       );
 

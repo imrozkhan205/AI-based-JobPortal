@@ -57,12 +57,20 @@ export const analyzeResume = async (req, res) => {
             console.log(`✅ Extracted ${resumeText.length} characters from resume`);
 
         } catch (error) {
-            console.error('❌ Error extracting resume:', error.message, error.response?.data || '');
+            const isHtml = typeof error.response?.data === 'string' && error.response.data.includes('<html');
+            const errorDetails = isHtml ? `[Render Gateway Status ${error.response?.status}]` : (error.response?.data || error.message);
+            console.error('❌ Error extracting resume:', error.message, errorDetails);
 
-            if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+            if (
+                error.code === 'ECONNREFUSED' ||
+                error.code === 'ETIMEDOUT' ||
+                error.response?.status === 502 ||
+                error.response?.status === 503 ||
+                error.response?.status === 504
+            ) {
                 return res.status(503).json({
                     success: false,
-                    message: 'BERT service is warming up or unavailable. Please try again in a few seconds.',
+                    message: 'BERT AI service is currently waking up from standby. Please try again in 15-20 seconds.',
                     error: error.message
                 });
             }
@@ -70,7 +78,7 @@ export const analyzeResume = async (req, res) => {
             return res.status(500).json({
                 success: false,
                 message: 'Failed to extract text from resume',
-                error: error.response?.data?.error || error.message
+                error: isHtml ? 'AI extraction service temporary gateway error' : (error.response?.data?.error || error.message)
             });
         }
 
@@ -156,20 +164,28 @@ export const analyzeResume = async (req, res) => {
             });
 
         } catch (error) {
-            console.error('❌ Error matching jobs:', error.message);
+            const isHtml = typeof error.response?.data === 'string' && error.response.data.includes('<html');
+            const errorDetails = isHtml ? `[Render Gateway Status ${error.response?.status}]` : (error.response?.data || error.message);
+            console.error('❌ Error matching jobs:', error.message, errorDetails);
 
-            if (error.code === 'ECONNREFUSED') {
+            if (
+                error.code === 'ECONNREFUSED' ||
+                error.code === 'ETIMEDOUT' ||
+                error.response?.status === 502 ||
+                error.response?.status === 503 ||
+                error.response?.status === 504
+            ) {
                 return res.status(503).json({
                     success: false,
-                    message: 'BERT service is not available. Please try again later.',
-                    error: 'Service unavailable'
+                    message: 'BERT AI service is currently warming up. Please try again in 15 seconds.',
+                    error: error.message
                 });
             }
 
             return res.status(500).json({
                 success: false,
                 message: 'Failed to match jobs with resume',
-                error: error.response?.data?.error || error.message
+                error: isHtml ? 'AI matching service temporary gateway error' : (error.response?.data?.error || error.message)
             });
         }
 
