@@ -198,7 +198,7 @@ export const analyzeResume = async (req, res) => {
 export const checkBertServiceHealth = async (req, res) => {
     try {
         const response = await axios.get(`${BERT_SERVICE_URL}/health`, {
-            timeout: 5000
+            timeout: 30000 // 30s timeout so health check can wait for cold-start wakeups
         });
 
         return res.status(200).json({
