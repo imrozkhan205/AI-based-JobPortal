@@ -252,11 +252,10 @@ const EmployerAnalyticsPage = () => {
               <button
                 key={option.value}
                 onClick={() => setRangeDays(option.value)}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  rangeDays === option.value
+                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${rangeDays === option.value
                     ? 'bg-blue-500 text-white'
                     : 'text-gray-300 hover:text-white'
-                }`}
+                  }`}
               >
                 {option.label}
               </button>

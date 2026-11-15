@@ -2,8 +2,10 @@ import axios from 'axios';
 import FormData from 'form-data';
 import pool from '../database/db.js'; // Import your MySQL connection pool
 
-// Python BERT service URL
-const BERT_SERVICE_URL = process.env.BERT_SERVICE_URL || 'http://localhost:5001';
+// Python BERT service URL (strip trailing slash if present)
+const BERT_SERVICE_URL = (
+  process.env.BERT_SERVICE_URL || 'http://localhost:5001'
+).replace(/\/+$/, '');
 
 /**
  * Controller for POST /api/resume/analyze
@@ -41,7 +43,7 @@ export const analyzeResume = async (req, res) => {
                     headers: {
                         ...formData.getHeaders(),
                     },
-                    timeout: 30000, // 30 second timeout
+                    timeout: 90000, // 90s timeout to allow Render free tier to wake up
                     maxBodyLength: Infinity,
                     maxContentLength: Infinity,
                 }
@@ -55,13 +57,13 @@ export const analyzeResume = async (req, res) => {
             console.log(`✅ Extracted ${resumeText.length} characters from resume`);
 
         } catch (error) {
-            console.error('❌ Error extracting resume:', error.message);
+            console.error('❌ Error extracting resume:', error.message, error.response?.data || '');
 
-            if (error.code === 'ECONNREFUSED') {
+            if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
                 return res.status(503).json({
                     success: false,
-                    message: 'BERT service is not available. Please try again later.',
-                    error: 'Service unavailable'
+                    message: 'BERT service is warming up or unavailable. Please try again in a few seconds.',
+                    error: error.message
                 });
             }
 
@@ -132,7 +134,7 @@ export const analyzeResume = async (req, res) => {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    timeout: 60000, // 60 second timeout for matching
+                    timeout: 90000, // 90 second timeout for matching
                 }
             );
 

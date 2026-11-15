@@ -46,12 +46,13 @@ class ResumeParser:
     
     @staticmethod
     def extract_text(file_bytes, filename):
-        if filename.endswith('.pdf'):
+        lower_name = (filename or "").lower()
+        if lower_name.endswith('.pdf'):
             return ResumeParser.extract_text_from_pdf(file_bytes)
-        elif filename.endswith('.docx') or filename.endswith('.doc'):
+        elif lower_name.endswith('.docx') or lower_name.endswith('.doc'):
             return ResumeParser.extract_text_from_docx(file_bytes)
         else:
-            raise Exception("Unsupported file format")
+            raise Exception(f"Unsupported file format: {filename}. Please upload a .pdf or .docx file")
 
 def calculate_similarity(text1, text2):
     """Calculate semantic similarity between two texts using FastEmbed"""
