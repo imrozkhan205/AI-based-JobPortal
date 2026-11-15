@@ -68,7 +68,7 @@ const JobDetailPage = () => {
         // If user is signed in, fetch their role and check application status
         if (isSignedIn) {
           const token = await getToken({ template: "default" });
-          const userResponse = await axios.get("${API_BASE_URL}/api/users/me", {
+          const userResponse = await axios.get(`${API_BASE_URL}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           
@@ -183,7 +183,7 @@ const JobDetailPage = () => {
         resumeFormData.append('resume', resumeFile);
 
         const uploadResponse = await axios.post(
-          '${API_BASE_URL}/api/applications/upload-resume',
+          `${API_BASE_URL}/api/applications/upload-resume`,
           resumeFormData,
           {
             headers: { 

@@ -130,7 +130,7 @@ const BrowseJobsPage = () => {
       console.log('📤 Sending resume to backend for analysis...');
 
       const response = await axios.post(
-        '${API_BASE_URL}/api/resume/analyze',
+        `${API_BASE_URL}/api/resume/analyze`,
         formData,
         {
           headers: {

@@ -40,7 +40,7 @@ const EmployerAnalyticsPage = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const jobsRes = await axios.get(
-        '${API_BASE_URL}/api/jobs/employer/my-jobs?limit=100',
+        `${API_BASE_URL}/api/jobs/employer/my-jobs?limit=100`,
         { headers }
       );
 

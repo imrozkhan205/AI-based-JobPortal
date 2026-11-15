@@ -19,7 +19,7 @@ function CompaniesPage() {
 
   const fetchCompanies = async () => {
     try {
-      const res = await axios.get("${API_BASE_URL}/api/companies");
+      const res = await axios.get(`${API_BASE_URL}/api/companies`);
       setCompanies(res.data);
     } catch (err) {
       console.error("Error fetching companies", err);

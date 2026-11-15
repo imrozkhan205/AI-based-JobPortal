@@ -152,7 +152,7 @@ const ChatbotPage = () => {
       }
 
       const res = await axios.post(
-        "${API_BASE_URL}/api/chatbot/ask",
+        `${API_BASE_URL}/api/chatbot/ask`,
         formData,
         {
           headers: {

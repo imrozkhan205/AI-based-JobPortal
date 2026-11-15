@@ -51,7 +51,7 @@ const EmployerApplicationsPage = () => {
       const token = await getToken({ template: "default" });
       
       const response = await axios.get(
-        '${API_BASE_URL}/api/jobs/employer/my-jobs?limit=100',
+        `${API_BASE_URL}/api/jobs/employer/my-jobs?limit=100`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }

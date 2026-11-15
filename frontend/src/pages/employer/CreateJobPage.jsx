@@ -101,7 +101,7 @@ const CreateJobPage = () => {
       const token = await getToken({ template: "default" });
       
       // Get current user info to set posted_by
-      const userRes = await axios.get("${API_BASE_URL}/api/users/me", {
+      const userRes = await axios.get(`${API_BASE_URL}/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -111,7 +111,7 @@ const CreateJobPage = () => {
       };
 
       const response = await axios.post(
-        '${API_BASE_URL}/api/jobs',
+        `${API_BASE_URL}/api/jobs`,
         jobData,
         {
           headers: { 
