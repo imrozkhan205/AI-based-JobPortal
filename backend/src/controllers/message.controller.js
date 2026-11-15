@@ -53,7 +53,7 @@ export const getConversations = async (req, res) => {
         JOIN jobs j ON a.job_id = j.id
         JOIN users u ON j.posted_by = u.id
         WHERE a.user_id = ?
-        ORDER BY COALESCE((SELECT created_at FROM messages WHERE application_id = a.id ORDER BY created_at DESC LIMIT 1), a.created_at) DESC
+        ORDER BY COALESCE(last_message_at, a.created_at) DESC
       `;
     } else {
       // Employer: conversations = applications to my jobs; other party = applicant
@@ -71,7 +71,7 @@ export const getConversations = async (req, res) => {
         JOIN jobs j ON a.job_id = j.id
         JOIN users u ON a.user_id = u.id
         WHERE j.posted_by = ?
-        ORDER BY COALESCE((SELECT created_at FROM messages WHERE application_id = a.id ORDER BY created_at DESC LIMIT 1), a.created_at) DESC
+        ORDER BY COALESCE(last_message_at, a.created_at) DESC
       `;
     }
 

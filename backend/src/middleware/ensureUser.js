@@ -32,11 +32,19 @@ export async function ensureUserInDB(req, res, next) {
 
     if (rows.length === 0) {
       console.log("🔍 DEBUG ensureUser - Creating new user...");
-      await pool.query(
-        `INSERT INTO users (clerk_id, email, role) VALUES (?, ?, 'jobseeker')`,
-        [clerkId, email]
-      );
-      console.log(`✅ Inserted new user: ${email} with clerk_id: ${clerkId}`);
+      try {
+        await pool.query(
+          `INSERT INTO users (clerk_id, email, role) VALUES (?, ?, 'jobseeker')`,
+          [clerkId, email || '']
+        );
+        console.log(`✅ Inserted new user: ${email} with clerk_id: ${clerkId}`);
+      } catch (insertErr) {
+        if (insertErr.code === 'ER_DUP_ENTRY') {
+          console.log(`✅ Race condition handled: user ${clerkId} was inserted by a parallel request.`);
+        } else {
+          throw insertErr;
+        }
+      }
     } else {
       console.log(`✅ User already exists: ${clerkId}`);
 
