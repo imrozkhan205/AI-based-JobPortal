@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../lib/axios';
 import {
   BarChart3,
   Briefcase,
@@ -39,7 +40,7 @@ const EmployerAnalyticsPage = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const jobsRes = await axios.get(
-        'http://localhost:5000/api/jobs/employer/my-jobs?limit=100',
+        '${API_BASE_URL}/api/jobs/employer/my-jobs?limit=100',
         { headers }
       );
 
@@ -54,7 +55,7 @@ const EmployerAnalyticsPage = () => {
 
       const jobRequests = fetchedJobs.map((job) =>
         axios
-          .get(`http://localhost:5000/api/applications/job/${job.id}?limit=200`, {
+          .get(`${API_BASE_URL}/api/applications/job/${job.id}?limit=200`, {
             headers
           })
           .then((res) => ({

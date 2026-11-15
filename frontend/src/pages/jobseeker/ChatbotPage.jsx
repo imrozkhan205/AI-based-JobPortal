@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
+import { API_BASE_URL } from "../../lib/axios";
 import {
   Bot,
   Send,
@@ -151,7 +152,7 @@ const ChatbotPage = () => {
       }
 
       const res = await axios.post(
-        "http://localhost:5000/api/chatbot/ask",
+        "${API_BASE_URL}/api/chatbot/ask",
         formData,
         {
           headers: {

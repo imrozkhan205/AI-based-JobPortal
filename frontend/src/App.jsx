@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from './lib/axios';
 
 import Dashboard from './pages/Dashboard';
 import SignInPage from './pages/SignInPage';
@@ -55,7 +56,7 @@ export default function App() {
 
       try {
         const token = await getToken({ template: "default" });
-        const res = await axios.get("http://localhost:5000/api/users/me", {
+        const res = await axios.get(`${API_BASE_URL}/api/users/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserRole(res.data.role);

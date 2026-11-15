@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../lib/axios';
 import { 
   MapPin, 
   Briefcase, 
@@ -50,7 +51,7 @@ const EmployerApplicationsPage = () => {
       const token = await getToken({ template: "default" });
       
       const response = await axios.get(
-        'http://localhost:5000/api/jobs/employer/my-jobs?limit=100',
+        '${API_BASE_URL}/api/jobs/employer/my-jobs?limit=100',
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -86,7 +87,7 @@ const EmployerApplicationsPage = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/applications/job/${jobId}?${params}`,
+        `${API_BASE_URL}/api/applications/job/${jobId}?${params}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -111,7 +112,7 @@ const EmployerApplicationsPage = () => {
       console.log('🔄 Updating application:', { applicationId, newStatus });
       
       const response = await axios.patch(
-        `http://localhost:5000/api/applications/${applicationId}/status`,
+        `${API_BASE_URL}/api/applications/${applicationId}/status`,
         { status: newStatus },
         {
           headers: { 
@@ -161,7 +162,7 @@ const EmployerApplicationsPage = () => {
       }
 
       const res = await axios.get(
-        `http://localhost:5000/api/applications/${applicationId}/resume`,
+        `${API_BASE_URL}/api/applications/${applicationId}/resume`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",

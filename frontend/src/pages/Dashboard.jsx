@@ -1,6 +1,7 @@
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useEffect } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../lib/axios";
 
 export default function Dashboard() {
   const { getToken } = useAuth();
@@ -14,7 +15,7 @@ export default function Dashboard() {
         const token = await getToken();
 
         await axios.post(
-          "http://localhost:5000/api/auth/sync-user",
+          `${API_BASE_URL}/api/auth/sync-user`,
           {
             clerkId: user.id,
             email: user.primaryEmailAddress.emailAddress,

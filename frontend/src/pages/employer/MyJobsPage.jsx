@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../lib/axios';
 import { 
   Briefcase, 
   MapPin, 
@@ -58,7 +59,7 @@ const MyJobsPage = () => {
       const token = await getToken({ template: "default" });
       
       const response = await axios.get(
-        `http://localhost:5000/api/jobs/employer/my-jobs?page=${page}&limit=10`,
+        `${API_BASE_URL}/api/jobs/employer/my-jobs?page=${page}&limit=10`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -86,7 +87,7 @@ const MyJobsPage = () => {
       const token = await getToken({ template: "default" });
       
       await axios.delete(
-        `http://localhost:5000/api/jobs/${jobToDelete.id}`,
+        `${API_BASE_URL}/api/jobs/${jobToDelete.id}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../lib/axios';
 import { 
   MapPin, 
   Briefcase, 
@@ -61,13 +62,13 @@ const JobDetailPage = () => {
         setLoading(true);
         
         // Fetch job details
-        const jobResponse = await axios.get(`http://localhost:5000/api/jobs/${id}`);
+        const jobResponse = await axios.get(`${API_BASE_URL}/api/jobs/${id}`);
         setJob(jobResponse.data);
 
         // If user is signed in, fetch their role and check application status
         if (isSignedIn) {
           const token = await getToken({ template: "default" });
-          const userResponse = await axios.get("http://localhost:5000/api/users/me", {
+          const userResponse = await axios.get("${API_BASE_URL}/api/users/me", {
             headers: { Authorization: `Bearer ${token}` },
           });
           
@@ -76,7 +77,7 @@ const JobDetailPage = () => {
           // Check if current user is the job owner
           if (userResponse.data.role === 'employer') {
             const myJobsResponse = await axios.get(
-              `http://localhost:5000/api/jobs/employer/my-jobs`,
+              `${API_BASE_URL}/api/jobs/employer/my-jobs`,
               {
                 headers: { Authorization: `Bearer ${token}` }
               }
@@ -90,7 +91,7 @@ const JobDetailPage = () => {
           if (userResponse.data.role === 'jobseeker') {
             try {
               const statusResponse = await axios.get(
-                `http://localhost:5000/api/applications/check/${id}`,
+                `${API_BASE_URL}/api/applications/check/${id}`,
                 {
                   headers: { Authorization: `Bearer ${token}` }
                 }
@@ -182,7 +183,7 @@ const JobDetailPage = () => {
         resumeFormData.append('resume', resumeFile);
 
         const uploadResponse = await axios.post(
-          'http://localhost:5000/api/applications/upload-resume',
+          '${API_BASE_URL}/api/applications/upload-resume',
           resumeFormData,
           {
             headers: { 
@@ -219,7 +220,7 @@ const JobDetailPage = () => {
       }
       
       await axios.post(
-        `http://localhost:5000/api/applications/${id}`,
+        `${API_BASE_URL}/api/applications/${id}`,
         { 
           coverLetter: coverLetterWithInfo,
           resumeUrl: resumeUrl // For now using data URL, can be changed to actual URL if we create upload endpoint
@@ -261,7 +262,7 @@ const JobDetailPage = () => {
       const token = await getToken({ template: "default" });
       
       await axios.delete(
-        `http://localhost:5000/api/jobs/${id}`,
+        `${API_BASE_URL}/api/jobs/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }

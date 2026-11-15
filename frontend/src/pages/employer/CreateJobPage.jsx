@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../lib/axios';
 import { 
   MapPin, 
   DollarSign, 
@@ -100,7 +101,7 @@ const CreateJobPage = () => {
       const token = await getToken({ template: "default" });
       
       // Get current user info to set posted_by
-      const userRes = await axios.get("http://localhost:5000/api/users/me", {
+      const userRes = await axios.get("${API_BASE_URL}/api/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -110,7 +111,7 @@ const CreateJobPage = () => {
       };
 
       const response = await axios.post(
-        'http://localhost:5000/api/jobs',
+        '${API_BASE_URL}/api/jobs',
         jobData,
         {
           headers: { 

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../lib/axios";
 import {
   Briefcase,
   FileText,
@@ -20,7 +21,6 @@ import {
   Loader2,
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000";
 
 const statusMeta = {
   pending: {

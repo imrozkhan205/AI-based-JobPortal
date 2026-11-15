@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../../lib/axios";
 
 function CompaniesPage() {
   const [companies, setCompanies] = useState([]);
@@ -18,7 +19,7 @@ function CompaniesPage() {
 
   const fetchCompanies = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/companies");
+      const res = await axios.get("${API_BASE_URL}/api/companies");
       setCompanies(res.data);
     } catch (err) {
       console.error("Error fetching companies", err);
@@ -29,23 +30,23 @@ function CompaniesPage() {
   const fetchCompanyDetails = async (companyId) => {
     try {
       const cultureRes = await axios.get(
-        `http://localhost:5000/api/companies/${companyId}/culture`
+        `${API_BASE_URL}/api/companies/${companyId}/culture`
       );
 
       const attrRes = await axios.get(
-        `http://localhost:5000/api/companies/${companyId}/attributes`
+        `${API_BASE_URL}/api/companies/${companyId}/attributes`
       );
 
       const benefitsRes = await axios.get(
-        `http://localhost:5000/api/companies/${companyId}/benefits`
+        `${API_BASE_URL}/api/companies/${companyId}/benefits`
       );
 
       const reviewsRes = await axios.get(
-        `http://localhost:5000/api/companies/${companyId}/reviews`
+        `${API_BASE_URL}/api/companies/${companyId}/reviews`
       );
 
       const valuesRes = await axios.get(
-        `http://localhost:5000/api/companies/${companyId}/values`
+        `${API_BASE_URL}/api/companies/${companyId}/values`
       );
 
       setCultureData(prev => ({
@@ -91,7 +92,7 @@ function CompaniesPage() {
   const voteReview = async (reviewId, isHelpful, companyId) => {
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/reviews/${reviewId}/helpful`,
+        `${API_BASE_URL}/api/reviews/${reviewId}/helpful`,
         { is_helpful: isHelpful }
       );
 

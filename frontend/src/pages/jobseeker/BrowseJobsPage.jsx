@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../lib/axios';
 import {
   Briefcase,
   MapPin,
@@ -129,7 +130,7 @@ const BrowseJobsPage = () => {
       console.log('📤 Sending resume to backend for analysis...');
 
       const response = await axios.post(
-        'http://localhost:5000/api/resume/analyze',
+        '${API_BASE_URL}/api/resume/analyze',
         formData,
         {
           headers: {

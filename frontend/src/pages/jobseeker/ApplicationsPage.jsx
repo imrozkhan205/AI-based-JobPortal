@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../lib/axios';
 import { 
   MapPin, 
   Briefcase, 
@@ -61,7 +62,7 @@ const ApplicationsPage = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/applications/my-applications?${params}`,
+        `${API_BASE_URL}/api/applications/my-applications?${params}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }

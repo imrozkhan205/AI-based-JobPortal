@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, FileText, CheckCircle, XCircle, AlertCircle, Award, TrendingUp, Mail, Phone, Linkedin, Briefcase, GraduationCap, Code, Target } from 'lucide-react';
+import { API_BASE_URL } from '../lib/axios';
 
 const ATSChecker = () => {
   const [file, setFile] = useState(null);
@@ -23,7 +24,7 @@ const ATSChecker = () => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileSelect(e.dataTransfer.files[0]);
     }
@@ -31,17 +32,17 @@ const ATSChecker = () => {
 
   const handleFileSelect = (selectedFile) => {
     const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    
+
     if (!validTypes.includes(selectedFile.type)) {
       setError('Please upload a PDF or DOCX file');
       return;
     }
-    
+
     if (selectedFile.size > 5 * 1024 * 1024) {
       setError('File size must be less than 5MB');
       return;
     }
-    
+
     setFile(selectedFile);
     setError(null);
   };
@@ -68,7 +69,7 @@ const ATSChecker = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/ats/check', {
+      const response = await fetch(`${API_BASE_URL}/api/ats/check`, {
         method: 'POST',
         body: formData,
       });
@@ -151,11 +152,10 @@ const ATSChecker = () => {
                 Upload Resume (PDF or DOCX)
               </label>
               <div
-                className={`border-2 border-dashed rounded-xl p-4 text-center transition-all ${
-                  dragActive
+                className={`border-2 border-dashed rounded-xl p-4 text-center transition-all ${dragActive
                     ? 'border-blue-400 bg-blue-500/10'
                     : 'border-gray-700 hover:border-blue-400 bg-gray-900/40'
-                }`}
+                  }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
@@ -203,11 +203,10 @@ const ATSChecker = () => {
             <button
               onClick={analyzeResume}
               disabled={!file || loading}
-              className={`w-full py-4 rounded-xl font-semibold text-white text-lg transition-all ${
-                !file || loading
+              className={`w-full py-4 rounded-xl font-semibold text-white text-lg transition-all ${!file || loading
                   ? 'bg-gray-700 cursor-not-allowed'
                   : 'bg-blue-600 hover:bg-blue-500 shadow-lg hover:shadow-xl'
-              }`}
+                }`}
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -330,9 +329,8 @@ const ATSChecker = () => {
                     {Object.entries(results.sections).map(([section, present]) => (
                       <div
                         key={section}
-                        className={`flex items-center p-3 rounded-lg ${
-                          present ? 'bg-emerald-500/10 text-emerald-200 border border-emerald-500/30' : 'bg-red-500/10 text-red-200 border border-red-500/30'
-                        }`}
+                        className={`flex items-center p-3 rounded-lg ${present ? 'bg-emerald-500/10 text-emerald-200 border border-emerald-500/30' : 'bg-red-500/10 text-red-200 border border-red-500/30'
+                          }`}
                       >
                         {present ? (
                           <CheckCircle className="w-4 h-4 mr-2" />

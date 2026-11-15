@@ -206,7 +206,11 @@ def calculate_text_similarity():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
+    import os
+    default_port = 7860 if os.environ.get("SPACE_ID") else 5001
+    port = int(os.environ.get("PORT", default_port))
+    debug = os.environ.get("FLASK_ENV") == "development"
     print("\n" + "="*50)
-    print("🤖 BERT Microservice Starting...")
+    print(f"🤖 BERT Microservice Starting on port {port}...")
     print("="*50 + "\n")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=debug)
