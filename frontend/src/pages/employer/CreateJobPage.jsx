@@ -164,7 +164,7 @@ const CreateJobPage = () => {
       <div className="space-y-4">
         <div>
           <h1 className="text-2xl font-bold text-white-400">{formData.title || 'Job Title'}</h1>
-          <div className="flex items-center space-x-4 mt-2 text-gray-300">
+          <div className="flex flex-wrap items-center gap-3 mt-2 text-gray-300">
             <span className="flex items-center">
               <Building size={16} className="mr-1" />
               {formData.company || 'Company Name'}
@@ -219,7 +219,7 @@ const CreateJobPage = () => {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Post a New Job</h1>
         <p className="text-gray-400">Fill in the details to create a job listing</p>

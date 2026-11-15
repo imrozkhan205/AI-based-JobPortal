@@ -260,7 +260,7 @@ const JobseekerDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
+    <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
@@ -309,7 +309,7 @@ const JobseekerDashboard = () => {
           </div>
         ) : (
           <>
-            <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
+            <section className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
               {statCards.map((stat) => {
                 const Icon = stat.icon;
                 return (

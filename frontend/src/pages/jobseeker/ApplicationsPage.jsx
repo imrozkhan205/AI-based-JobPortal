@@ -132,7 +132,7 @@ const ApplicationsPage = () => {
 
   if (loading && applications.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-900 p-6">
+      <div className="min-h-screen bg-gray-900 p-3 sm:p-6">
         <div className="flex items-center justify-center h-64">
           <Loader className="animate-spin h-8 w-8 text-orange-400" />
           <span className="ml-3 text-gray-400">Loading your applications...</span>
@@ -144,7 +144,7 @@ const ApplicationsPage = () => {
   const stats = pagination ? null : getStatusStats();
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-900 p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -206,7 +206,7 @@ const ApplicationsPage = () => {
         )}
 
         {/* Filters */}
-        <div className="mb-6 flex items-center gap-4 bg-gray-800 border border-gray-700 rounded-xl p-4">
+        <div className="mb-6 flex flex-wrap items-center gap-3 sm:gap-4 bg-gray-800 border border-gray-700 rounded-xl p-3 sm:p-4">
           <Filter size={20} className="text-gray-400" />
           <label className="text-gray-300 font-medium">Filter by status:</label>
           <select
@@ -281,7 +281,7 @@ const ApplicationsPage = () => {
                     className="bg-gray-800 border border-gray-700 rounded-xl p-6 hover:border-gray-600 transition-all cursor-pointer hover:shadow-lg"
                     onClick={() => navigate(`/jobs/${application.job_id}`)}
                   >
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
                       <div className="flex-1">
                         <h3 className="text-xl font-semibold text-white mb-2 hover:text-orange-400 transition-colors">
                           {application.job_title}

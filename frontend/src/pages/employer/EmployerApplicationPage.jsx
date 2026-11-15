@@ -234,7 +234,7 @@ const EmployerApplicationsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 p-6">
+      <div className="min-h-screen bg-gray-900 p-3 sm:p-6">
         <div className="flex items-center justify-center h-64">
           <Loader className="animate-spin h-8 w-8 text-orange-400" />
           <span className="ml-3 text-gray-400">Loading your jobs...</span>
@@ -245,7 +245,7 @@ const EmployerApplicationsPage = () => {
 
   if (myJobs.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-900 p-6">
+      <div className="min-h-screen bg-gray-900 p-3 sm:p-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold text-white mb-8">Job Applications</h1>
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-12 text-center">
@@ -269,7 +269,7 @@ const EmployerApplicationsPage = () => {
   const stats = getApplicationStats();
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-900 p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -313,7 +313,7 @@ const EmployerApplicationsPage = () => {
                 {/* Selected Job Header */}
                 <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-6">
                   <h2 className="text-2xl font-bold text-white mb-2">{selectedJob.title}</h2>
-                  <div className="flex items-center gap-4 text-gray-400 text-sm">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-gray-400 text-sm">
                     <span className="flex items-center">
                       <Building size={14} className="mr-1" />
                       {selectedJob.company}
@@ -330,7 +330,7 @@ const EmployerApplicationsPage = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-6">
                   <div className="bg-gray-800 border border-gray-700 rounded-xl p-4">
                     <div className="text-gray-400 text-sm mb-1">Total</div>
                     <div className="text-2xl font-bold text-white">{stats.total}</div>

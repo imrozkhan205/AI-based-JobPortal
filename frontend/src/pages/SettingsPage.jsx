@@ -259,7 +259,7 @@ export default function SettingsPage({ onRoleChange }) {
   };
 
   return (
-    <div className="p-6 text-white">
+    <div className="p-4 sm:p-6 text-white max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Settings</h1>
 
       {error && (
@@ -268,7 +268,7 @@ export default function SettingsPage({ onRoleChange }) {
         </div>
       )}
 
-      <div className="flex items-center justify-between bg-gray-800 p-4 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-800 p-4 rounded-lg">
         <div>
           <p className="text-lg">Current Role:</p>
           <p className="text-blue-400 font-semibold capitalize">{role}</p>

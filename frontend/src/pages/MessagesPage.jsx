@@ -143,7 +143,7 @@ export default function MessagesPage() {
       ) : (
         <div className="flex-1 flex min-h-0 rounded-lg border border-gray-800 overflow-hidden bg-gray-900/50">
           {/* Conversation list */}
-          <div className="w-80 border-r border-gray-800 flex flex-col shrink-0">
+          <div className={`w-full md:w-80 border-r border-gray-800 flex flex-col shrink-0 ${selected ? "hidden md:flex" : "flex"}`}>
             <div className="p-2 border-b border-gray-800 bg-gray-900/80">
               <p className="text-sm text-gray-400 px-2">Conversations</p>
             </div>
@@ -170,11 +170,19 @@ export default function MessagesPage() {
           </div>
 
           {/* Chat area */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className={`flex-1 flex flex-col min-w-0 ${!selected ? "hidden md:flex" : "flex"}`}>
             {selected ? (
               <>
-                <div className="p-3 border-b border-gray-800 bg-gray-900/80">
-                  <p className="font-medium text-white">{selected.otherPartyEmail}</p>
+                <div className="p-3 border-b border-gray-800 bg-gray-900/80 flex items-center justify-between">
+                  <div>
+                    <button
+                      onClick={() => setSelected(null)}
+                      className="md:hidden text-xs text-indigo-400 hover:text-indigo-300 mb-1 flex items-center gap-1"
+                    >
+                      ← Back to conversations
+                    </button>
+                    <p className="font-medium text-white">{selected.otherPartyEmail}</p>
+                  </div>
                   <p className="text-sm text-gray-500">{selected.jobTitle} at {selected.company}</p>
                 </div>
 

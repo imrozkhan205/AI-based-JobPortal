@@ -236,7 +236,7 @@ const MyJobsPage = () => {
               key={job.id}
               className="bg-gray-800 border border-gray-700 rounded-xl p-6 hover:border-white-500/30 transition-colors"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
                     <h3 className="text-xl font-semibold text-white">{job.title}</h3>

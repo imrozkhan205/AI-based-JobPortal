@@ -1,15 +1,16 @@
 import CompaniesPage from './pages/jobseeker/CompaniesPage.jsx';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { SignedIn, useUser, useAuth } from '@clerk/clerk-react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { SignedIn, useUser, useAuth, UserButton } from '@clerk/clerk-react';
 import {
   Home, Users, FileText, Settings,
   MessageCircle, Building2, LayoutDashboard as DashboardIcon,
   Briefcase, Plus, BarChart3, UserCheck,
-  File, Bot
+  File, Bot, Menu
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from './lib/axios';
+import rocket from './assets/rocket.png';
 
 import Dashboard from './pages/Dashboard';
 import SignInPage from './pages/SignInPage';
@@ -41,10 +42,17 @@ import EmployerVerificationsPage from './pages/team/EmployerVerificationsPage.js
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [roleLoading, setRoleLoading] = useState(true);
   const { user, isSignedIn } = useUser();
   const { getToken } = useAuth();
+  const location = useLocation();
+
+  const isPublicPage =
+    location.pathname === '/' ||
+    location.pathname.startsWith('/sign-in') ||
+    location.pathname.startsWith('/sign-up');
 
   // Fetch user role from your backend
   useEffect(() => {
@@ -106,16 +114,45 @@ export default function App() {
           <Sidebar
             collapsed={collapsed}
             setCollapsed={setCollapsed}
+            mobileOpen={mobileOpen}
+            setMobileOpen={setMobileOpen}
             links={navigationLinks}
             userRole={userRole}
           />
         )}
       </SignedIn>
 
-      <div className={`transition-all duration-300 ${!['/', '/sign-in', '/sign-up'].includes(window.location.pathname)
-          ? (collapsed ? 'ml-20' : 'ml-64')
-          : ''
-        }`}>
+      {/* Mobile Top Header for Authenticated App Pages */}
+      <SignedIn>
+        {!isPublicPage && (
+          <header className="md:hidden flex items-center justify-between px-4 py-3 bg-black/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-30">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMobileOpen(true)}
+                className="p-1.5 -ml-1 text-gray-300 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
+                aria-label="Open navigation menu"
+              >
+                <Menu size={22} />
+              </button>
+              <div className="flex items-center gap-2">
+                <img src={rocket} alt="JobSpace" className="w-7 h-7" />
+                <span className="font-bold text-lg text-white">JobSpace</span>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          </header>
+        )}
+      </SignedIn>
+
+      <div
+        className={`transition-all duration-300 min-h-screen ${
+          !isPublicPage
+            ? (collapsed ? 'md:ml-20 ml-0' : 'md:ml-64 ml-0')
+            : ''
+        }`}
+      >
         <Routes>
           {/* Common routes */}
           <Route path="/" element={<HomePage />} />

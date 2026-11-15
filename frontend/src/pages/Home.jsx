@@ -29,9 +29,9 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="text-center mb-20">
-        <div className="flex justify-center items-center mt-20 pr-20">
-          <img src={rocket} alt="" className="h-[80px] md:h-[120px] mb-4" />
-          <h1 className="font-michroma text-3xl md:text-6xl font-bold mb-4">
+        <div className="flex justify-center items-center mt-12 md:mt-20">
+          <img src={rocket} alt="" className="h-[60px] sm:h-[80px] md:h-[120px] mb-4 mr-2" />
+          <h1 className="font-michroma text-3xl sm:text-4xl md:text-6xl font-bold mb-4">
             JobSpace
           </h1>
         </div>

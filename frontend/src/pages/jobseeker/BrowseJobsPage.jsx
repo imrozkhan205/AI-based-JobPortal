@@ -194,7 +194,7 @@ const BrowseJobsPage = () => {
   // --- Job Card Component ---
   const JobCard = ({ job }) => (
     <div className="p-6 border border-gray-700 rounded-lg shadow-sm mb-4 bg-gray-800 hover:shadow-lg hover:border-indigo-500 transition duration-300">
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-gray-100 flex items-center">
             <Briefcase className="w-5 h-5 mr-2 text-indigo-400" />
@@ -219,7 +219,7 @@ const BrowseJobsPage = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm text-gray-400">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mt-4 text-xs sm:text-sm text-gray-400">
         <p className="flex items-center"><MapPin className="w-4 h-4 mr-1 text-red-400" />{job.location}</p>
         <p className="flex items-center"><DollarSign className="w-4 h-4 mr-1 text-green-400" />{job.salary_range ? `${getCurrencySymbol(job.currency)}${job.salary_range}` : 'N/A'}</p>
         <p className="flex items-center"><Clock className="w-4 h-4 mr-1 text-blue-400" />{getJobTypeLabel(job.job_type)}</p>
@@ -232,10 +232,10 @@ const BrowseJobsPage = () => {
         {job.description ? `${job.description.substring(0, 150)}...` : 'No description provided.'}
       </p>
 
-      <div className="mt-4 flex space-x-2 justify-end">
+      <div className="mt-4 flex justify-end">
         <button
           onClick={() => navigate(`/jobs/${job.id}`)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-500 transition duration-150 flex items-center"
+          className="w-full sm:w-auto justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-500 transition duration-150 flex items-center text-sm font-medium"
         >
           <Eye className="w-5 h-5 mr-2" /> View Job
         </button>
@@ -245,7 +245,7 @@ const BrowseJobsPage = () => {
 
   // --- Upload Resume Section ---
   const UploadResumeSection = () => (
-    <div className="bg-gray-800 p-10 rounded-xl shadow-2xl max-w-2xl mx-auto my-20 border border-indigo-500">
+    <div className="bg-gray-800 p-5 sm:p-10 rounded-xl shadow-2xl max-w-2xl mx-4 sm:mx-auto my-6 sm:my-16 border border-indigo-500">
       <div className="text-center mb-6">
         <Zap className="w-12 h-12 text-indigo-400 mx-auto mb-3" />
         <h2 className="text-2xl font-bold text-gray-100">Get Personalized Job Recommendations</h2>
@@ -331,10 +331,10 @@ const BrowseJobsPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 bg-gray-900 min-h-screen">
+    <div className="container mx-auto p-4 sm:p-6 bg-gray-900 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start mb-8 border-b border-gray-700 pb-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-100 flex items-center">
+          <h1 className="text-xl sm:text-3xl font-extrabold text-gray-100 flex items-center">
             <Zap className="w-7 h-7 mr-3 text-indigo-400" />
             Recommended Jobs ({filteredJobs.length} of {jobs.length})
           </h1>
@@ -360,7 +360,7 @@ const BrowseJobsPage = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-gray-800 p-6 rounded-xl shadow-lg mb-8 grid grid-cols-1 md:grid-cols-3 gap-4 border border-gray-700">
+      <div className="bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg mb-6 sm:mb-8 grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 border border-gray-700">
         <div className="md:col-span-2 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input

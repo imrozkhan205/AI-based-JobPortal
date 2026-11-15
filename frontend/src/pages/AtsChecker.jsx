@@ -133,7 +133,7 @@ const ATSChecker = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 py-4 sm:py-8 px-3 sm:px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
@@ -146,7 +146,7 @@ const ATSChecker = () => {
         </div>
 
         {!results ? (
-          <div className="bg-gray-900/60 border border-gray-700 rounded-2xl shadow-xl p-8">
+          <div className="bg-gray-900/60 border border-gray-700 rounded-2xl shadow-xl p-4 sm:p-8">
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-200 mb-3">
                 Upload Resume (PDF or DOCX)
@@ -223,7 +223,7 @@ const ATSChecker = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="bg-gray-900/60 border border-gray-700 rounded-2xl shadow-xl p-8">
+            <div className="bg-gray-900/60 border border-gray-700 rounded-2xl shadow-xl p-4 sm:p-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-white">Analysis Results</h2>
                 <button

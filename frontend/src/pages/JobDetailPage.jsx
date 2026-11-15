@@ -310,7 +310,7 @@ const JobDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
           <span className="ml-3 text-gray-400">Loading job details...</span>
@@ -321,7 +321,7 @@ const JobDetailPage = () => {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold text-red-400 mb-4">{error}</h1>
           <button
@@ -337,7 +337,7 @@ const JobDetailPage = () => {
 
   if (!job) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold text-gray-400 mb-4">Job not found</h1>
           <button
@@ -352,7 +352,7 @@ const JobDetailPage = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
         <button
@@ -363,10 +363,10 @@ const JobDetailPage = () => {
           Back
         </button>
 
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-white mb-2">{job.title}</h1>
-            <div className="flex items-center gap-4 text-gray-400 mb-4">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-gray-400 mb-4">
               <span className="flex items-center">
                 <Building size={16} className="mr-1" />
                 {job.company}
@@ -515,8 +515,8 @@ const JobDetailPage = () => {
 
       {/* Apply Modal */}
       {showApplyModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h3 className="text-2xl font-semibold text-white mb-4">Apply for {job.title}</h3>
             
             {/* Step Indicator */}
